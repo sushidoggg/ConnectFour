@@ -1,4 +1,7 @@
-"""errr"""
+"""errr
+bbblalallala
+
+"""
 
 from future import annotations
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
