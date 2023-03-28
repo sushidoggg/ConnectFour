@@ -11,6 +11,7 @@ from typing import Optional
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 GRID_WIDTH, GRID_HEIGHT = 7, 6
 
+# fixme: this is olivia
 
 class ConnectFour:
     """
