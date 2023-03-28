@@ -1,5 +1,7 @@
-import pygame
 from __future__ import annotations
+
+import pygame
+from connect_four import ConnectFour
 
 SQUARESIZE = ...
 BOARD_WIDTH, BOARD_HEIGHT = SQUARESIZE * 7, SQUARESIZE * (6 + 1)
