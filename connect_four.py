@@ -1,6 +1,10 @@
 """errr"""
 
-from future import annotations
+from __future__ import annotations
+
+import random
+from typing import Optional
+
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 GRID_WIDTH, GRID_HEIGHT = 7, 6
 
@@ -20,8 +24,8 @@ class ConnectFour:
     - all(move[0] < 7 and move[1] < 6 for move in player_two_moves)
     """
     grid: list[list[int]]
-    player_one_moves: list[tuple[int]]
-    player_two_moves: list[tuple[int]]
+    player_one_moves: list[tuple[int, int]]
+    player_two_moves: list[tuple[int, int]]
     _possible_columns: list[int]
 
     def __init__(self) -> None:
@@ -29,7 +33,7 @@ class ConnectFour:
         self.grid = [[UNOCCUPIED] * GRID_WIDTH for y in range(GRID_HEIGHT)]
         self.player_one_moves = []
         self.player_two_moves = []
-        self._possible_columns = [i for i in range (GRID_WIDTH)]
+        self._possible_columns = [i for i in range(GRID_WIDTH)]
 
     def is_player_one_turn(self) -> bool:
         """ Retern a boolean that represents whether or not it is the first player's turn.
@@ -51,7 +55,7 @@ class ConnectFour:
         self._update_possible_column()
         self._update_grid(tuple_move)
 
-    def _update_grid(self, tuple_move: tuple[int]) -> None:
+    def _update_grid(self, tuple_move: tuple[int, int]) -> None:
         """
         Update the current grid.
         """
@@ -60,8 +64,7 @@ class ConnectFour:
         else:
             self.grid[tuple_move[0]][tuple_move[1]] = 1
 
-
-    def get_tuple_by_col(self, move_column: int) -> tuple[int]:
+    def get_tuple_by_col(self, move_column: int) -> tuple[int, int]:
         """
         Return the place in grid as a tuple of int.
 
@@ -81,7 +84,7 @@ class ConnectFour:
             if any(self.grid[y][x] == UNOCCUPIED for y in range(GRID_HEIGHT)):
                 self._possible_columns.append(x)
 
-    def get_possible_column(self) -> list[tuple]:
+    def get_possible_column(self) -> list[int]:
         """ Return the possible moves for the current game state, or [] if a player has won the game.
         """
         if self.get_winner() is None:
@@ -100,7 +103,7 @@ class ConnectFour:
             ...
         # TODO
 
-    def get_sequence_moves(self) -> list[tuple[int]]:
+    def get_sequence_moves(self) -> list[tuple[int, int]]:
         """
         Return the move sequence made in this game.
         """
@@ -111,8 +114,8 @@ class ConnectFour:
                 moves_so_far.append(self.player_two_moves[i])
         return moves_so_far
 
-def is_four_connected(grid: list[list[int]], move: tuple[int]) -> bool:
 
+def is_four_connected(grid: list[list[int]], move: tuple[int, int]) -> bool:
     return ...
 
 
@@ -136,6 +139,7 @@ class Player:
         """
         raise NotImplementedError
 
+
 # class UserPlayer(Player):
 #     """ An abstract class representing a user player of Connect 4.
 #     """
@@ -147,6 +151,7 @@ class AIPlayer(Player):
     """ An abstract class representing an AI player of Connect 4.
 
     """
+
     def choose_column(self, game: ConnectFour) -> int:
         """ Return the column that is corresponding to the AI's move.
         """
