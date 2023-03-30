@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import math
 import pygame
+from interface import draw_window
 
 from connect_four import ConnectFour
 
@@ -25,8 +26,6 @@ pygame.init()
 screen = pygame.display.set_mode(SIZE)
 
 
-def draw_window(screen, connect_four):
-    pass # olivia 写
 
 draw_window(screen, connect_four_game)
 pygame.display.update()
