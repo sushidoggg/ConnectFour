@@ -1,24 +1,11 @@
+
 from __future__ import annotations
 from connect_four import ConnectFour
 from main import SQAURESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
 
-<<<<<<< Updated upstream
-
-SQUARESIZE= 75
-=======
-'''SQUARESIZE= 75
->>>>>>> Stashed changes
-RADIUS = int(SQUARESIZE / 3)
-WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
-BUTTOM_COLUMN_WIDTH = ...
-FONT = ...
-COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (0, 255, 255), (255, 0, 0)
-BLUE, WHITE, BLACK = (0, 0, 255), (255, 255, 255), (0,0,0)
-ROW_COUNT, COLUMN_COUNT = 6, 7'''
-
 def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
-    '''Draw a beautiful disc on window at the given window with given color'''
+    """Draw a beautiful disc on window at the given window with given color"""
     ...
 
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
