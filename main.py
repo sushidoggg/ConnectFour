@@ -30,7 +30,7 @@ from connect_four import ConnectFour
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT = 6
 COLUMN_COUNT = 7
-SQUARESIZE= 75
+SQUARESIZE = 75
 RADIUS = int(SQUARESIZE / 3)
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
 SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -50,8 +50,8 @@ draw_window(screen, connect_four_game)
 pygame.display.update()
 
 user_go_first = None
-go_first_button = BUTTON()
-go_second_button = BUTTON()
+go_first_button = BUTTON(x=9*SQUARESIZE, y=1*SQUARESIZE, image='I go first')
+go_second_button = BUTTON(x=9*SQUARESIZE, y=4*SQUARESIZE, image='AI go first')
 
 while not go_first_button.clicked and not go_second_button.clicked:
     for event in pygame.event.get():
@@ -95,28 +95,39 @@ while not game_over:
                         col = int(math.floor(posx/SQUARESIZE) - 1)
 
                         # col = int(input("Player 1 Make your selection: (0, 6)"))
-                        if is_valid_location(connect_four_game.grid, col):
-                            row = get_next_open_row(connect_four_game.grid, col)
-                            drop_piece(connect_four_game.grid, row, col, 0)
+                        valid = is_valid_location(connect_four_game, col)
+                        if not valid:
+                            label_not_valid = FONT.render("Choose another column!", True, BLACK)
+                            screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
+
+                            pass
+
+                        if is_valid_location(connect_four_game, col):
+                            drop_piece(connect_four_game, col)
                     else:
                         col = AI_player.choose_column(connect_four_game)
-                        row = get_next_open_row(connect_four_game.grid, col)
-                        drop_piece(connect_four_game.grid, row, col, 1)
+                        drop_piece(connect_four_game, col)
 
                 # ask player 2 input
                 else:  # player 2 turn
                     if user_go_first:
                         col = AI_player.choose_column(connect_four_game)
-                        row = get_next_open_row(connect_four_game.grid, col)
-                        drop_piece(connect_four_game.grid, row, col, 0)
+                        drop_piece(connect_four_game, col)
                     else:
                         col = int(math.floor(posx/SQUARESIZE) - 1)
 
-                        if is_valid_location(connect_four_game.grid, col):
-                            row = get_next_open_row(connect_four_game.grid, col)
-                            drop_piece(connect_four_game.grid, row, col, 1)
+                        valid = is_valid_location(connect_four_game, col)
+                        if not valid:
+                            label_not_valid = FONT.render("Choose another column!", True, BLACK)
+                            screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
 
-                connect_four_game.record_player_move(col)
+                            pass
+
+                        if is_valid_location(connect_four_game, col):
+                            drop_piece(connect_four_game, col)
+
+                # connect_four_game.record_player_move(col)
+                pygame.draw.rect(screen, BLACK, (SQUARESIZE, SQUARESIZE, 7 * SQUARESIZE, SQUARESIZE))
 
                 if connect_four_game.get_winner() is not None:
                     game_over = True
