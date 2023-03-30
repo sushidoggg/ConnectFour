@@ -4,17 +4,34 @@ from connect_four import ConnectFour
 from main import SQAURESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
 
+BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
 # todo: click the two buttons and see if it is user
 class Button():
     """A class represents a circle buttons."""
-
+    image: pygame.Surface
+    rect: pygame.Rect
+    clicked: bool
     def __init__(self, x: int, y: int, image: str) -> None:
         """Create a button of given image at (x, y)"""
-        self.image = image
-        self.center = (x, y)
+        img = pygame.image.load(image).convert_alpha()
+        self.image = pygame.transform.scale(img, (BUTTON_WIDTH, BUTTON_HEIGHT))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
         self.clicked = False
-    def draw(self, window: pygame.Surface) -> None:
+    def draw(self, window: pygame.Surface) -> bool:
+        action = False
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
 
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+        # draw button on screen
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
 
 
 
@@ -43,8 +60,6 @@ def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
                 pygame.draw.circle(window, COLOR_PLAYER_ONE, (
                     int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     pygame.display.update()
-
-
 
 
 
