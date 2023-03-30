@@ -20,8 +20,10 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 """
 from __future__ import annotations
 from connect_four import ConnectFour
-from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
+from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
+    BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
+
 
 BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
 # todo: click the two buttons and see if it is user
@@ -57,15 +59,16 @@ def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int])
     """Draw a beautiful disc on window at the given window with given color"""
     ...
 
+
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
-    '''Based on the given sqaure size, draw the whole interface on the given window at the current status of game
-        If game.grid are all unoccupied, then just draw the window'''
+    """Based on the given sqaure size, draw the whole interface on the given window at the current status of game
+        If game.grid are all unoccupied, then just draw the window"""
     window.fill(WHITE)
     pygame.display.flip()
     grid = game.grid
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            pygame.draw.rect(window, BLUE, ((c + 1)* SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
             pygame.draw.circle(window, WHITE, (
                 int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     for c in range(COLUMN_COUNT):
@@ -79,17 +82,33 @@ def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
                     int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     pygame.display.update()
 
-def drop_piece(board, row, col, piece):
-    board[row][col] = piece
 
-def is_valid_location(board, col):
-    # check if the location is valid
-    return board[ROW_COUNT - 1][col] == -1
+def drop_piece(game: ConnectFour, col: int) -> None:
+    """
+    Represent the player's move on the board.
+    """
+    # board[row][col] = piece
+    game.record_player_move(col)
 
-def get_next_open_row(board, col):
-    for r in range(ROW_COUNT):
-        if board[r][col] == -1:
-            return r
+
+def is_valid_location(game: ConnectFour, col: int) -> bool:
+    """
+    Return if the current column is a valid column.
+    """
+    # return board[ROW_COUNT - 1][col] == -1
+    return col in game.get_possible_columns()
+
+
+# def get_next_open_row(game: ConnectFour, col: int) -> int:
+#     """
+#     Get the next avaible row position for the current column.
+#     """
+#     # for r in range(ROW_COUNT):
+#     #     if board[r][col] == -1:
+#     #         return r
+#     return game.get_move_position_by_column(col)[0]
+
+
 
 
 if __name__ == '__main__':
