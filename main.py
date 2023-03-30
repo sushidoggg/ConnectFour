@@ -26,26 +26,26 @@ import sys
 import math
 import pygame
 
-
 from connect_four import ConnectFour
+
+pygame.init()  # pygame needs to be initialized before defining FONT
 
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT = 6
 COLUMN_COUNT = 7
-SQUARESIZE= 75
+SQUARESIZE = 75
 RADIUS = int(SQUARESIZE / 3)
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
 SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 
 BUTTOM_COLUMN_WIDTH = ...
 FONT = pygame.font.Font(None, 75)
-COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (0, 255, 255), (255, 0, 0)
-BLUE, WHITE, BLACK = (0, 0, 255), (255, 255, 255), (0,0,0)
+COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
+BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0,0,0)
 
 connect_four_game = ConnectFour()
 game_over = False
 
-pygame.init()
 screen = pygame.display.set_mode(SIZE)
 
 draw_window(screen, connect_four_game)
