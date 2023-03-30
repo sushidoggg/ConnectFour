@@ -21,43 +21,80 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 from __future__ import annotations
 from connect_four import ConnectFour
 from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT
+
+    BLACK, ROW_COUNT, COLUMN_COUNT, FONT
 import pygame
 
+# todo: I NEED a FONT that can be used
 
-BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
-# todo: click the two buttons and see if it is user
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
+DISABLE_COLOR = (100,100,100) # Grey
+BUTTON_COLOR = COLOR_PLAYER_ONE
+
 class Button():
     """A class represents a circle buttons."""
-    image: pygame.Surface
-    rect: pygame.Rect
+    word: str
+    center: tuple[int, int]
     clicked: bool
-    def __init__(self, x: int, y: int, image: str) -> None:
-        """Create a button of given image at (x, y)"""
-        img = pygame.image.load(image).convert_alpha()
-        self.image = pygame.transform.scale(img, (BUTTON_WIDTH, BUTTON_HEIGHT))
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
+    def __init__(self, x: int, y: int, word: str) -> None:
+        """Create a rectangular button of given image at (x, y)
+        x, y are the topleft location of the button on a screen.
+        image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT in the same ratio"""
+
+        # img = pygame.image.load(image).convert_alpha()
+        # self.image = pygame.transform.scale(img, (BUTTON_WIDTH, BUTTON_HEIGHT))
+        self.center = (x, y)
+        self.word = word
         self.clicked = False
-    def draw(self, window: pygame.Surface) -> bool:
-        action = False
-        pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
-                action = True
 
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-        # draw button on screen
-        window.blit(self.image, (self.rect.x, self.rect.y))
+    def draw(self, window: pygame.Surface) -> None:
+        """Draw the button with words on it on the given window. """
+        # draw a rectangle
+        topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
+        topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
+        pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        # draw word
+        text = FONT.render(self.word, True, BLACK) # todo: change the font
+        w, h = text.get_size()
+        text_x = int(self.center[0] - w / 2)
+        text_y = int(self.center[1] - h / 2)
+        window.blit(text, (text_x, text_y))
+        pygame.display.update()
 
-        return action
+    def disabled(self, window: pygame.Surface) -> None:
+        """Make the button grey color"""
+        # draw a rectangle
+        topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
+        topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
+        pygame.draw.rect(window, DISABLE_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        # draw word
+        text = FONT.render(self.word, True, BLACK) # todo: change the font
+        w, h = text.get_size()
+        text_x = int(self.center[0] - w / 2)
+        text_y = int(self.center[1] - h / 2)
+        window.blit(text, (text_x, text_y))
+        pygame.display.update()
+
+    def is_valid(self, position: tuple[int]) -> bool:
+        left, right = int(self.center[0] - BUTTON_WIDTH / 2), int(self.center[0] + BUTTON_WIDTH / 2)
+        up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
+        if left <= position[0] <= right and up <= position[1] <= down:
+            self.clicked = True
+            # todo：做一个按下去的动画
+            return True
+        else:
+            return False
 
 
-def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
+def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
     """Draw a beautiful disc on window at the given window with given color"""
     ...
+    pygame.draw.circle(window, color, (center[0], center[1]), RADIUS)
+    # create a darker color and draw the outer circle of the disc
+    darker = (int(color[0] / 3), int(color[1] / 3), int(color[2] / 3))
+    pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 5))
+    pygame.display.update()
+
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
@@ -113,10 +150,15 @@ def is_valid_location(game: ConnectFour, col: int) -> bool:
 
 if __name__ == '__main__':
     # 模拟main里面的window
-
-    pygame.display.init()
+    pygame.init()
     window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    window.fill((0,0,0))
     pygame.display.set_caption("Connect Four")
+    pygame.display.flip()
+    b1 = Button(100, 100, "Heelo")
+    b1.draw(window)
+    pygame.display.update()
+
     # main while loop
     while True:
         for event in pygame.event.get():
