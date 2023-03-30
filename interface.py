@@ -1,21 +1,27 @@
+"""CSC111 Winter 2023 Project: Connect 4 (Interface)
+
+Module Description
+==================
+
+This module contains a collection of Python classes and functions that represent the interface of Connect 4,
+which is mainly implemented using the Pygame modules.
+By reading the *docstring* of this file, you can gain insights into the
+role and functionality of these classes and functions as well as how they contribute to this project as a whole.
+
+Copyright and Usage Information
+===============================
+
+This file is provided solely for the personal and private use of the
+Teaching Stream of CSC111 at the University of Toronto St. George campus.
+All forms of distribution of this code, whether as given or with any changes, are
+expressly prohibited.
+
+This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
+"""
 from __future__ import annotations
 from connect_four import ConnectFour
 from main import SQAURESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
-
-<<<<<<< Updated upstream
-
-SQUARESIZE= 75
-=======
-'''SQUARESIZE= 75
->>>>>>> Stashed changes
-RADIUS = int(SQUARESIZE / 3)
-WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
-BUTTOM_COLUMN_WIDTH = ...
-FONT = ...
-COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (0, 255, 255), (255, 0, 0)
-BLUE, WHITE, BLACK = (0, 0, 255), (255, 255, 255), (0,0,0)
-ROW_COUNT, COLUMN_COUNT = 6, 7'''
 
 def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
     '''Draw a beautiful disc on window at the given window with given color'''
