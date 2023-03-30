@@ -23,8 +23,16 @@ from connect_four import ConnectFour
 from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
 
+<<<<<<< Updated upstream
 BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
 # todo: click the two buttons and see if it is user
+=======
+# todo: I NEED a FONT that can be used. ERROR: Font not initialized
+
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
+DISABLE_COLOR = (100,100,100) # Grey
+BUTTON_COLOR = COLOR_PLAYER_ONE
+>>>>>>> Stashed changes
 class Button():
     """A class represents a circle buttons."""
     image: pygame.Surface
