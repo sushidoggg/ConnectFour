@@ -42,7 +42,7 @@ while not game_over:
             if #posx, posy in the region for selection and player is user :
                 pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2 + SQUARESIZE)), RADIUS) #Olivia 改一下颜色
             else:
-                continue
+                pass
 
         pygame.display.update()
 
