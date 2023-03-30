@@ -3,10 +3,10 @@
 Module Description
 ==================
 
-This module contains a collection of Python classes and functions that represent the game of Connect 4.
-This file contains classes including ConnectFour, Player, RandomPlayer and AIPlayer, with associated functions
-defined under each class. By reading the *docstring* of this file, you can gain insights into the
-role and functionality of these classes and functions
+This module contains a main class ConnectFour that represents the game of Connect 4
+with a collection of Python functions defined under this class.
+By reading the *docstring* of this file, you can gain insights into the
+role and functionality of this class and functions
 as well as how they contribute to this project as a whole.
 
 Copyright and Usage Information
@@ -21,7 +21,6 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 Additionally, this file references a2_adversarial_wordle.py from CSC111 Assignment 2,
 which is also Copyright (c) 2023 Mario Badr, David Liu, and Angela Zavaleta Bernuy.
 """
-
 from __future__ import annotations
 from typing import Optional
 

@@ -1,13 +1,24 @@
-"""
+"""CSC111 Winter 2023 Project: Connect 4 (Game Tree)
+
 Module Description
 ==================
-# TODO: Write a Docstring
+
+This module contains a GameTree class of the game Connect 4 with a collections of functions
+defined under the class. By reading the *docstring* of this file, you can gain insights into the
+role and functionality of this class and functions as well as how they contribute to this project as a whole.
 
 Copyright and Usage Information
 ===============================
-# TODO
-"""
 
+This file is provided solely for the personal and private use of the
+Teaching Stream of CSC111 at the University of Toronto St. George campus.
+All forms of distribution of this code, whether as given or with any changes, are
+expressly prohibited.
+
+This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
+Additionally, this file references a2_game_tree.py from CSC111 Assignment 2,
+which is also Copyright (c) 2023 Mario Badr, David Liu, and Isaac Waller.
+"""
 from __future__ import annotations
 from typing import Optional
 
