@@ -21,6 +21,7 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 from __future__ import annotations
 from connect_four import ConnectFour
 from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
+
     BLACK, ROW_COUNT, COLUMN_COUNT, FONT
 import pygame
 
@@ -29,6 +30,7 @@ import pygame
 BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
 DISABLE_COLOR = (100,100,100) # Grey
 BUTTON_COLOR = COLOR_PLAYER_ONE
+
 class Button():
     """A class represents a circle buttons."""
     word: str
@@ -92,6 +94,7 @@ def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: t
     darker = (int(color[0] / 3), int(color[1] / 3), int(color[2] / 3))
     pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 5))
     pygame.display.update()
+
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
