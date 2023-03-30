@@ -17,7 +17,6 @@ expressly prohibited.
 
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
-
 from __future__ import annotations
 
 import sys
