@@ -1,3 +1,23 @@
+"""CSC111 Winter 2023 Project: Connect 4 (Interface)
+
+Module Description
+==================
+
+This module contains a collection of Python classes and functions that represent the interface of Connect 4,
+which is mainly implemented using the Pygame modules.
+By reading the *docstring* of this file, you can gain insights into the
+role and functionality of these classes and functions as well as how they contribute to this project as a whole.
+
+Copyright and Usage Information
+===============================
+
+This file is provided solely for the personal and private use of the
+Teaching Stream of CSC111 at the University of Toronto St. George campus.
+All forms of distribution of this code, whether as given or with any changes, are
+expressly prohibited.
+
+This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
+"""
 from __future__ import annotations
 from connect_four import ConnectFour
 import pygame
