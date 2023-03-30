@@ -22,6 +22,7 @@ from __future__ import annotations
 from connect_four import ConnectFour
 from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
     BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO
+
 import pygame
 
 # todo: I NEED a FONT that can be used
@@ -29,6 +30,7 @@ import pygame
 BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
 DISABLE_COLOR = (100, 100, 100)  # Grey
 BUTTON_COLOR = COLOR_PLAYER_ONE
+
 class Button():
     """A class represents a circle buttons."""
     word: str
@@ -95,6 +97,7 @@ def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: 
     darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
     pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
     pygame.display.update()
+
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
