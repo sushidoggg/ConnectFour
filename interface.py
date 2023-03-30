@@ -25,9 +25,40 @@ from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_O
 import pygame
 
 
-# def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
-#     '''Draw a beautiful disc on window at the given window with given color'''
-#     ...
+BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
+# todo: click the two buttons and see if it is user
+class Button():
+    """A class represents a circle buttons."""
+    image: pygame.Surface
+    rect: pygame.Rect
+    clicked: bool
+    def __init__(self, x: int, y: int, image: str) -> None:
+        """Create a button of given image at (x, y)"""
+        img = pygame.image.load(image).convert_alpha()
+        self.image = pygame.transform.scale(img, (BUTTON_WIDTH, BUTTON_HEIGHT))
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
+        self.clicked = False
+    def draw(self, window: pygame.Surface) -> bool:
+        action = False
+        pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                self.clicked = True
+                action = True
+
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+        # draw button on screen
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+        return action
+
+
+def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
+    """Draw a beautiful disc on window at the given window with given color"""
+    ...
+
 
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
     """Based on the given sqaure size, draw the whole interface on the given window at the current status of game
@@ -42,6 +73,7 @@ def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
                 int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
+            # TODO: convert grid-index to pygame's index
             if grid[r][c] == 1:  # Player Two's disc
                 pygame.draw.circle(window, COLOR_PLAYER_TWO, (
                     int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
@@ -78,8 +110,10 @@ def is_valid_location(game: ConnectFour, col: int) -> bool:
 
 
 
+
 if __name__ == '__main__':
     # 模拟main里面的window
+
     pygame.display.init()
     window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     pygame.display.set_caption("Connect Four")
