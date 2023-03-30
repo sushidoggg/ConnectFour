@@ -20,7 +20,7 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 """
 from __future__ import annotations
 from connect_four import ConnectFour
-from main import SQAURESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
+from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
 
 BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
@@ -79,6 +79,17 @@ def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
                     int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     pygame.display.update()
 
+def drop_piece(board, row, col, piece):
+    board[row][col] = piece
+
+def is_valid_location(board, col):
+    # check if the location is valid
+    return board[ROW_COUNT - 1][col] == -1
+
+def get_next_open_row(board, col):
+    for r in range(ROW_COUNT):
+        if board[r][col] == -1:
+            return r
 
 
 if __name__ == '__main__':

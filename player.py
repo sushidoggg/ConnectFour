@@ -23,10 +23,11 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 Additionally, this file references a2_adversarial_wordle.py from CSC111 Assignment 2,
 which is also Copyright (c) 2023 Mario Badr, David Liu, and Angela Zavaleta Bernuy.
 """
+
 from __future__ import annotations
 import random
 from typing import Optional
-from game_tree import GameTree
+from game_tree import GameTree, GAME_START_MOVE
 from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
 
 
@@ -93,3 +94,22 @@ class AIPlayer(Player):
             random_choice_max_score_tree = random.choice(max_score_trees)
             self._game_tree = random_choice_max_score_tree
             return random_choice_max_score_tree.move[1]
+
+
+def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFour, d: int) -> GameTree:
+    """ Returns a complete game tree to the depth d.
+
+    Preconditions:
+    - d >= 0
+    - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
+    # TODO: some more preconditions
+    """
+    if d == 0 or game_state.get_winner() is not None:
+
+        player = game_state.get_current_player()
+        if game_state.get_winner() == PLAYER_ONE:
+            return GameTree(root_move, player, score=1.0)
+        else:
+            return GameTree(root_move, player)
+    ...
+    # TODO: else....
