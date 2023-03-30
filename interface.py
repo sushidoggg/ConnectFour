@@ -23,7 +23,7 @@ from connect_four import ConnectFour
 from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
 
-BUTTON_WIDTH, BUTTON_HEIGHT = SQAURESIZE * 0.7, SQAURESIZE * 0.7
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
 # todo: click the two buttons and see if it is user
 class Button():
     """A class represents a circle buttons."""
@@ -31,7 +31,9 @@ class Button():
     rect: pygame.Rect
     clicked: bool
     def __init__(self, x: int, y: int, image: str) -> None:
-        """Create a button of given image at (x, y)"""
+        """Create a button of given image at (x, y)
+        x, y are the topleft location of the button on a screen.
+        image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT in the same ratio"""
         img = pygame.image.load(image).convert_alpha()
         self.image = pygame.transform.scale(img, (BUTTON_WIDTH, BUTTON_HEIGHT))
         self.rect = self.image.get_rect()
@@ -41,7 +43,7 @@ class Button():
         action = False
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked is False:
                 self.clicked = True
                 action = True
 
