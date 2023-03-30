@@ -2,7 +2,6 @@ from __future__ import annotations
 from connect_four import ConnectFour
 import pygame
 
-
 SQUARESIZE= 75
 RADIUS = int(SQUARESIZE / 3)
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
