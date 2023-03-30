@@ -19,11 +19,13 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 """
 from __future__ import annotations
 from player import RandomPlayer
+from interface import draw_window, Button, drop_piece, is_valid_location, get_next_open_row
+# FIXME: 如果加了imprt的话会显示circular import error
 
 import sys
 import math
 import pygame
-from interface import draw_window, BUTTON, drop_piece, is_valid_location, get_next_open_row
+
 
 from connect_four import ConnectFour
 
