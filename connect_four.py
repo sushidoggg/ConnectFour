@@ -121,7 +121,6 @@ class ConnectFour:
         - player in {PLAYER_ONE, PLAYER_TWO}
         - move_position[0] in self._possible_columns
         """
-
         for i in range(4):
             # Check for four orientations (horizontal, vertical, two diagonal) for 4 connected discs.
             orientation_x, orientation_y = ORIENTATIONS[i]
@@ -145,8 +144,7 @@ class ConnectFour:
         return False
 
     def copy_and_record_player_move(self, move_column: int) -> ConnectFour:
-        """ Return a copy of this game state with the given move recorded.
-        """
+        """ Return a copy of this game state with the given move recorded."""
         connect_four = self._copy()
         connect_four.record_player_move(move_column)
         return connect_four
@@ -274,13 +272,6 @@ class RandomPlayer(Player):
         possible_columns = game.get_possible_columns()
         return random.choice(possible_columns)
 
-
-# class UserPlayer(Player):
-#     """ An abstract class representing a user player of Connect 4.
-#     """
-#     def choose_column(self, game: ConnectFour) -> int:
-
-# HELLLLOOOOO ----Amanda
 
 class AIPlayer(Player):
     """ An abstract class representing an AI player of Connect 4.
