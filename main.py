@@ -23,6 +23,7 @@ from __future__ import annotations
 import sys
 import math
 import pygame
+from interface import draw_window
 
 from connect_four import ConnectFour
 
@@ -45,8 +46,6 @@ pygame.init()
 screen = pygame.display.set_mode(SIZE)
 
 
-def draw_window(screen, connect_four):
-    pass # olivia 写
 
 draw_window(screen, connect_four_game)
 pygame.display.update()
@@ -63,7 +62,7 @@ while not game_over:
             if #posx, posy in the region for selection and player is user :
                 pygame.draw.circle(screen, RED, (posx, int(SQUARESIZE/2 + SQUARESIZE)), RADIUS) #Olivia 改一下颜色
             else:
-                continue
+                pass
 
         pygame.display.update()
 
