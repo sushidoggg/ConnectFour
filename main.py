@@ -53,7 +53,7 @@ user_go_first = None
 go_first_button = BUTTON()
 go_second_button = BUTTON()
 
-while go_first_button.clicked == False and go_second_button.clicked == False:
+while not go_first_button.clicked and not go_second_button.clicked:
     for event in pygame.event.get():
         label_choose_order = FONT.render("Choose if you want to go first or last!", True, WHITE)
         screen.blit(label_choose_order, (SQUARESIZE + 40, SQUARESIZE + 10))
@@ -61,13 +61,12 @@ while go_first_button.clicked == False and go_second_button.clicked == False:
 pygame.draw.rect(screen, BLACK, (SQUARESIZE, SQUARESIZE, 7*SQUARESIZE, SQUARESIZE))
 
 
-AI_player = RandomPlayer(not user_go_first)
-
 if go_first_button.clicked:
     user_go_first = True
 else:
     user_go_first = False
 
+AI_player = RandomPlayer(not user_go_first)
 
 
 while not game_over:
@@ -76,7 +75,7 @@ while not game_over:
             sys.exit()
 
         if event.type == pygame.MOUSEMOTION:
-            pygame.draw.rect(screen,BLACK,(SQUARESIZE, SQUARESIZE, 7*SQUARESIZE, SQUARESIZE))
+            pygame.draw.rect(screen, BLACK, (SQUARESIZE, SQUARESIZE, 7*SQUARESIZE, SQUARESIZE))
             posx, posy = event.pos[0], event.pos[1]
             if posx in [SQUARESIZE, 8*SQUARESIZE] and posy in [SQUARESIZE, 8*SQUARESIZE]: #posx, posy in the region for selection and player is user :
                 pygame.draw.circle(screen, BLACK, (posx, int(SQUARESIZE/2 + SQUARESIZE)), RADIUS) #Olivia 改一下颜色
