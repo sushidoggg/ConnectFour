@@ -10,6 +10,7 @@ Copyright and Usage Information
 
 from __future__ import annotations
 from typing import Optional
+from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
 
 GAME_START_MOVE = "*"
 
@@ -21,20 +22,27 @@ class GameTree:
 
     Instance Attributes:
     - column: An int representing the current move (of either player_one or player_two),
-    or '*' if this tree represents the start of a game
+    or '*' if this tree represents the start of a game.
     - player: Either PLAYER_ONE or PLAYER_TWO indicating which player is doing this move.
-    - score: An integer representing how this move is favorable to self.player.
+    - score: A float between 0.0 to 1.0 (inclusive), representing how this move is favorable to self.player.
+
+    Representation Invariants:
+    - column == GAME_START_MOVE or 0 <= self.column < 7
+    - self.column == GAME_START_MOVE or self.player in {PLAYER_ONE, PLAYER_TWO}
+    - 0.0 <= self.score <= 1.0
+
     """
     column: int | str
     player: int
-    score: int
+    score: float
     _subtrees: dict[int, GameTree]
 
-    def __init__(self, column: str | int, player: int, score: Optional[int] = 0) -> None:
+    def __init__(self, column: str | int, player: int | None, score: Optional[float] = 0) -> None:
         """ Initialize a new game tree.
 
         Precondition:
-        - player == PLAYER_ONE or player == PLAYER_TWO
+        - column == GAME_START_MOVE or 0 <= column < 7
+        - player in {PLAYER_ONE, PLAYER_TWO}
         """
         self.column = column
         self.player = player
@@ -45,7 +53,7 @@ class GameTree:
         """Return the subtrees of this game tree."""
         return list(self._subtrees.values())
 
-    def find_subtree_by_column(self, column: int) -> Optional[GameTree]:
+    def get_subtree_by_column(self, column: int) -> Optional[GameTree]:
         """Return the subtree corresponding to the given column.
 
         Return None if no subtree corresponds to that column.
@@ -55,9 +63,20 @@ class GameTree:
         else:
             return None
 
-    def is_player_one(self) -> bool:
-        """Return whether the NEXT move should be made by player_one."""
-        return self.column == GAME_START_MOVE
+    def get_next_player(self) -> int:
+        """Return the player who should move next."""
+        if self.column == GAME_START_MOVE:
+            return PLAYER_ONE
+        else:
+            return self._get_opposite_player()
+
+    def _get_opposite_player(self) -> int:
+        """Return the opposite player of self.player.
+
+        Since self.player is either 0 or 1 (PLAYER_ONE or PLAYER_TWO),
+        we can use the x = 1 - x method to get the other possible value.
+        """
+        return 1 - self.player
 
     def __len__(self) -> int:
         """Return the number of items in this tree."""
@@ -67,6 +86,18 @@ class GameTree:
         """Add a subtree to this game tree."""
         self._subtrees[subtree.column] = subtree
         self._update_score()
+
+    def _update_score(self) -> None:
+        """ Update the score for each new move.
+        """
+        if len(self) == 1:
+            # Do nothing when self is a leaf node
+            return None
+        else:
+            # Choose the maximum score among all subtrees and reverse it to be self's score.
+            # TODO: Write a docstring and explain why
+            max_subtree_score = max(subtree.score for subtree in self.get_subtrees())
+            self.score = 1 - max_subtree_score
 
     def insert_move_sequence(self, columns: list[str | int], score: Optional[int] = 0) -> None:
         """ Insert the given sequence of moves into this tree.
@@ -81,8 +112,3 @@ class GameTree:
         """
         if len(columns) <= index:
             return
-
-    def _update_score(self) -> None:
-        """ Update the score for each new move.
-        """
-        ...
