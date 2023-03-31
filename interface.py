@@ -21,8 +21,6 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 from __future__ import annotations
 import pygame
 from connect_four import ConnectFour
-# from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-#     BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO
 
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT, COLUMN_COUNT = 6, 7
@@ -42,7 +40,6 @@ pygame.init()
 FONT = pygame.font.Font(None, 15)
 
 
-
 class Button():
     """A class represents a circle buttons."""
     word: str
@@ -55,7 +52,6 @@ class Button():
         self.center = (x, y)
         self.word = word
         self.clicked = False
-
     def draw(self, window: pygame.Surface) -> None:
         """Draw the button with words on it on the given window.
         It doesn't update screen in this function"""
