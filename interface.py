@@ -19,45 +19,56 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from connect_four import ConnectFour
-from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT
 import pygame
+from connect_four import ConnectFour
+
+UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
+ROW_COUNT, COLUMN_COUNT = 6, 7
+SQUARESIZE = 50
+RADIUS = int(SQUARESIZE / 3)
+WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
+SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
+
+pygame.init()
+BUTTOM_COLUMN_WIDTH = ...
+COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
+BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
+DISABLE_COLOR = (100, 100, 100)  # Grey
+BUTTON_COLOR = COLOR_PLAYER_ONE  # todo: decide the color later
+pygame.init()
+FONT = pygame.font.Font(None, 15)
 
 # todo: I NEED a FONT that can be used
 
-BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
-DISABLE_COLOR = (100,100,100) # Grey
-BUTTON_COLOR = COLOR_PLAYER_ONE
+
+# todo: I NEED a FONT that can be used
 class Button():
     """A class represents a circle buttons."""
     word: str
-    center: tuple[int]
+    center: tuple[int, int]
     clicked: bool
     def __init__(self, x: int, y: int, word: str) -> None:
-        """Create a button of given image at (x, y)
+        """Create a rectangular button of given image at (x, y)
         x, y are the topleft location of the button on a screen.
         image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT in the same ratio"""
-
-        # img = pygame.image.load(image).convert_alpha()
-        # self.image = pygame.transform.scale(img, (BUTTON_WIDTH, BUTTON_HEIGHT))
         self.center = (x, y)
         self.word = word
         self.clicked = False
-
-    def draw(self, window: pygame.Surface) -> bool:
+    def draw(self, window: pygame.Surface) -> None:
         """Draw the button with words on it on the given window. """
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
         pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
         # draw word
-        text = FONT.render(self.word, True, BLACK) # todo: change the font
+        text = FONT.render(self.word, True, BLACK)  # todo: change the font
         w, h = text.get_size()
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
         window.blit(text, (text_x, text_y))
         pygame.display.update()
+
     def disabled(self, window: pygame.Surface) -> None:
         """Make the button grey color"""
         # draw a rectangle
@@ -71,25 +82,37 @@ class Button():
         text_y = int(self.center[1] - h / 2)
         window.blit(text, (text_x, text_y))
         pygame.display.update()
-
     def is_valid(self, position: tuple[int]) -> bool:
         left, right = int(self.center[0] - BUTTON_WIDTH / 2), int(self.center[0] + BUTTON_WIDTH / 2)
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
             self.clicked = True
+            # todo：做一个按下去的动画
             return True
         else:
             return False
 
 
-def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
-    """Draw a beautiful disc on window at the given window with given color"""
-    ...
+def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
+    """Draw a beautiful disc on window at the given window with given color
+        The disc has two layers, color is its inner/base color; a darker color is its outer color
+        Preconditions:
+            - 0 <= center[0] <= WINDOW_WIDTH and 0 <= center[1] <= WINDOW_HEIGHT
+    """
+    pygame.draw.circle(window, color, (center[0], center[1]), RADIUS)
+    # create a darker color and draw the outer circle of the disc
+    darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
+    pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
+    pygame.display.update()
+
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
-    """Based on the given sqaure size, draw the whole interface on the given window at the current status of game
-        If game.grid are all unoccupied, then just draw the window"""
+    """ Based on the given sqaure size, draw the whole interface on the given window at the current status of game
+        If game.grid are all unoccupied, then just draw the window.
+        game.grid record the bottom row first, top row last. Wherease on pygame, the location of top row has smallest
+        y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
+    """
     window.fill(WHITE)
     pygame.display.flip()
     grid = game.grid
@@ -100,13 +123,12 @@ def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
                 int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            # TODO: convert grid-index to pygame's index
-            if grid[r][c] == 1:  # Player Two's disc
-                pygame.draw.circle(window, COLOR_PLAYER_TWO, (
-                    int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
-            elif grid[r][c] == 0:  # Player One's disc
-                pygame.draw.circle(window, COLOR_PLAYER_ONE, (
-                    int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
+            if grid[ROW_COUNT - 1 - r][c] == PLAYER_TWO:  # Player Two's disc
+                center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
+                _draw_one_disc(window, COLOR_PLAYER_TWO, center)
+            elif grid[ROW_COUNT - 1 - r][c] == PLAYER_ONE:  # Player One's disc
+                center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
+                _draw_one_disc(window, COLOR_PLAYER_ONE, center)
     pygame.display.update()
 
 
