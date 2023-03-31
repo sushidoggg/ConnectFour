@@ -96,16 +96,24 @@ class ConnectFour:
     def _update_possible_columns(self) -> None:
         """
         Update the possible columns with empty spaces which the next move can choose from.
+
+        Set self._winner to be UNOCCUPIED if there's a draw (when there is no possible columns).
         """
         self._possible_columns = []
         for x in range(GRID_WIDTH):
             if any(self.grid[y][x] == UNOCCUPIED for y in range(GRID_HEIGHT)):
                 self._possible_columns.append(x)
 
+        if not self._possible_columns:
+            # Game draws
+            self._winner = UNOCCUPIED
+
     def _update_winner(self, move_position: tuple[int, int]) -> None:
         """
         Update self._winner by checking if current player's move at move_position would result in him winning.
         """
+        if self._winner is not None:
+            return
         current_player = self.get_current_player()
         if self._is_four_connected(move_position, current_player):
             self._winner = current_player
@@ -208,6 +216,8 @@ class ConnectFour:
         """Return the winner of the game (PLAYER_ONE or PLAYER_TWO).
 
         Return None if the game is not over.
+
+        Return UNOCCUPIED if there is a draw game.
         """
         return self._winner
 

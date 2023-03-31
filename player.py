@@ -69,12 +69,18 @@ class AIPlayer(Player):
     _depth: int
     _game_tree: GameTree | None
 
-    def __init__(self, player_num: int, _game_tree: Optional[GameTree], search_depth: int) -> None:
+    def __init__(self, player_num: int, search_depth: int, game_tree: Optional[GameTree]) -> None:
         """
         # TODO
         """
         Player.__init__(self, player_num)
-        self._game_tree = _game_tree
+
+        if game_tree is not None:
+            self._game_tree = game_tree
+        else:
+            self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, ConnectFour(), search_depth,
+                                                              self.player_num)
+
         self._depth = search_depth
 
     def choose_column(self, game: ConnectFour) -> int:
@@ -87,8 +93,10 @@ class AIPlayer(Player):
             return possible_columns[0]
 
         if self._game_tree is None:
-            self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, game, self._depth)
+            self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, game, self._depth, self.player_num)
             # TODO: root move correct?
+        else:
+            update_complete_tree_to_depth(self._game_tree, game, self._depth, self.player_num)
 
         last_move = game.get_last_move()
         if last_move is None:
@@ -105,17 +113,16 @@ class AIPlayer(Player):
         subtrees = self._game_tree.get_subtrees()
 
         # Find the subtree with the largest 'minimum score'
-        largest_minimum_score = max(subtree.minimum_score for subtree in subtrees)
-        largest_minimum_score_subtrees = [subtree for subtree in subtrees
-                                          if subtree.minimum_score == largest_minimum_score]
-        if len(largest_minimum_score_subtrees) == 1:
-            self._game_tree = largest_minimum_score_subtrees[0]
+        largest_score = max(subtree.score for subtree in subtrees)
+        largest_score_subtrees = [subtree for subtree in subtrees if subtree.score == largest_score]
+        if len(largest_score_subtrees) == 1:
+            self._game_tree = largest_score_subtrees[0]
 
         else:
             # Break ties by finding the largest 'average score'
-            largest_average_score = max(subtree.average_score for subtree in subtrees)
-            largest_average_score_subtrees = [subtree for subtree in largest_minimum_score_subtrees
-                                              if subtree.average_score == largest_average_score]
+            largest_average_score = max(subtree.get_average_subtree_score() for subtree in largest_score_subtrees)
+            largest_average_score_subtrees = [subtree for subtree in largest_score_subtrees
+                                              if subtree.get_average_subtree_score() == largest_average_score]
             if len(largest_average_score_subtrees) == 1:
                 self._game_tree = largest_average_score_subtrees[0]
 
@@ -123,8 +130,7 @@ class AIPlayer(Player):
                 # Choose a random one
                 self._game_tree = random.choice(largest_average_score_subtrees)
 
-        update_complete_tree_to_depth(self._game_tree, game, self._depth)
-        return self._game_tree.column
+        return self._game_tree.move_column
 
 
 def score_last_move(game_state: ConnectFour) -> float:
@@ -166,7 +172,8 @@ def _score_move_by_player(game_state: ConnectFour, move_position: tuple[int, int
     return score
 
 
-def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFour, d: int) -> GameTree:
+def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFour, d: int,
+                                    initial_player: int) -> GameTree:
     """ Returns a complete game tree to the depth d.
 
     Preconditions:
@@ -182,29 +189,29 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
     if game_state.get_winner() is not None:
         # A winner already exists
         if game_state.get_winner() == player:
-            return GameTree(root_move, player, score=1.0)
+            return GameTree(root_move, initial_player, player, score=1.0)
         else:
             # Shouldn't reach this branch
-            return GameTree(root_move, player, score=-1.0)
+            return GameTree(root_move, initial_player, player, score=-1.0)
 
     elif d == 0:
         # Reaches maximum search depth
         score = score_last_move(game_state)
-        return GameTree(root_move, player, score=score)
+        return GameTree(root_move, initial_player, player, score=score)
 
     else:
-        game_tree = GameTree(root_move, player, score=0.0)
+        game_tree = GameTree(root_move, initial_player, player, score=0.0)
 
         possible_columns = game_state.get_possible_columns()
         for column in possible_columns:
             new_game_state = game_state.copy_and_record_player_move(column)
-            subtree = generate_complete_tree_to_depth(column, new_game_state, d - 1)
+            subtree = generate_complete_tree_to_depth(column, new_game_state, d - 1, initial_player)
             game_tree.add_subtree(subtree)
 
         return game_tree
 
 
-def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, d: int) -> None:
+def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, d: int, initial_player: int) -> None:
     """ Returns a complete game tree to the depth d.
 
     Preconditions:
@@ -219,14 +226,14 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
             possible_columns = game_state.get_possible_columns()
             for column in possible_columns:
                 new_game_state = game_state.copy_and_record_player_move(column)
-                subtree = generate_complete_tree_to_depth(column, new_game_state, d - 1)
+                subtree = generate_complete_tree_to_depth(column, new_game_state, d - 1, initial_player)
                 game_tree.add_subtree(subtree)
 
     else:
         # Recurse into next level
         for subtree in game_tree.get_subtrees():
-            new_game_state = game_state.copy_and_record_player_move(subtree.column)
-            update_complete_tree_to_depth(subtree, new_game_state, d - 1)
+            new_game_state = game_state.copy_and_record_player_move(subtree.move_column)
+            update_complete_tree_to_depth(subtree, new_game_state, d - 1, initial_player)
 
 
 if __name__ == '__main__':
@@ -234,10 +241,10 @@ if __name__ == '__main__':
 
     first_player = input('Who goes first? Please type AI or Human:')
     if first_player == 'AI':
-        AI_player = AIPlayer(PLAYER_ONE, None, 3)
+        AI_player = AIPlayer(PLAYER_ONE, 5, None)
         second_player = 'Human'
     else:
-        AI_player = AIPlayer(PLAYER_TWO, None, 3)
+        AI_player = AIPlayer(PLAYER_TWO, 5, None)
         second_player = 'AI'
 
     current_player = first_player
