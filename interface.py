@@ -19,17 +19,31 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from connect_four import ConnectFour
-from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO
-
 import pygame
+from connect_four import ConnectFour
+# from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
+#     BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO
+
+UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
+ROW_COUNT, COLUMN_COUNT = 6, 7
+SQUARESIZE = 50
+RADIUS = int(SQUARESIZE / 3)
+WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
+SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
+
+pygame.init()
+BUTTOM_COLUMN_WIDTH = ...
+COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
+BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
+DISABLE_COLOR = (100, 100, 100)  # Grey
+BUTTON_COLOR = COLOR_PLAYER_ONE  # todo: decide the color later
+pygame.init()
+FONT = pygame.font.Font(None, 15)
 
 # todo: I NEED a FONT that can be used
 
-BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
-DISABLE_COLOR = (100, 100, 100)  # Grey
-BUTTON_COLOR = COLOR_PLAYER_ONE
+
 
 class Button():
     """A class represents a circle buttons."""
