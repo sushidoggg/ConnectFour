@@ -41,11 +41,13 @@ class GameTree:
     - column == GAME_START_MOVE or 0 <= self.column < 7
     - self.column == GAME_START_MOVE or self.player in {PLAYER_ONE, PLAYER_TWO}
     - 0.0 <= self.score <= 1.0
+    # TODO: Introduce minimum score & average score
 
     """
     column: int | str
-    player: int
-    score: float
+    player: Optional[int]
+    minimum_score: float
+    average_score: float
     _subtrees: dict[int, GameTree]
 
     def __init__(self, column: str | int, player: int | None, score: Optional[float] = 0) -> None:
@@ -57,7 +59,8 @@ class GameTree:
         """
         self.column = column
         self.player = player
-        self.score = score
+        self.minimum_score = score
+        self.average_score = score
         self._subtrees = {}
 
     def get_subtrees(self) -> list[GameTree]:
@@ -73,6 +76,32 @@ class GameTree:
             return self._subtrees[column]
         else:
             return None
+
+    def __str__(self) -> str:
+        """Return a string representation of this tree.
+        """
+        return self._str_indented(0)
+
+    def _str_indented(self, depth: int) -> str:
+        """Return an indented string representation of this tree.
+
+        The indentation level is specified by the <depth> parameter.
+
+        You MAY change the implementation of this method (e.g. to display different instance attributes)
+        as you work on this assignment.
+
+        Preconditions:
+            - depth >= 0
+        """
+        if self.get_next_player() == PLAYER_ONE:
+            turn_desc = "Player One"
+        else:
+            turn_desc = "Player Two"
+        move_desc = f'{self.column}: {self.minimum_score}, {round(self.average_score, 3)} -> {turn_desc}\n'
+        str_so_far = '  ' * depth + move_desc
+        for subtree in self._subtrees.values():
+            str_so_far += subtree._str_indented(depth + 1)
+        return str_so_far
 
     def get_next_player(self) -> int:
         """Return the player who should move next."""
@@ -107,8 +136,11 @@ class GameTree:
         else:
             # Choose the maximum score among all subtrees and reverse it to be self's score.
             # TODO: Write a docstring and explain why
-            max_subtree_score = max(subtree.score for subtree in self.get_subtrees())
-            self.score = 1 - max_subtree_score
+
+            max_subtree_score = max(subtree.minimum_score for subtree in self.get_subtrees())
+            self.minimum_score = - max_subtree_score
+
+            self.average_score = - sum(subtree.minimum_score for subtree in self.get_subtrees()) / len(self._subtrees)
 
     def insert_move_sequence(self, columns: list[str | int], score: Optional[int] = 0) -> None:
         """ Insert the given sequence of moves into this tree.
