@@ -195,6 +195,7 @@ while True:
                                 print('567')
 
                                 time.sleep(1)
+                                print('haha')
 
                             else:
                                 print("NOT VALID")
