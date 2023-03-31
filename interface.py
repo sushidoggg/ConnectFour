@@ -36,8 +36,8 @@ BUTTOM_COLUMN_WIDTH = ...
 COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
 BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
 BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
-DISABLE_COLOR = (100, 100, 100)  # Grey
-BUTTON_COLOR = COLOR_PLAYER_ONE  # todo: decide the color later
+DISABLE_COLOR = (192, 192, 192)  # Grey
+BUTTON_COLOR = BLUE  # todo: decide the color later
 pygame.init()
 FONT = pygame.font.Font(None, 15)
 
@@ -89,7 +89,7 @@ class Button():
         window.blit(text, (text_x, text_y))
         pygame.display.update()
 
-    def is_valid(self, position: tuple[int]) -> bool:
+    def is_valid(self, position: tuple[int], window: pygame.Surface) -> bool:
         """Return if the given position is on the position of the button
         Precondition:
             - 0 <= position[0] <= WINDOW_WIDTH
@@ -99,6 +99,7 @@ class Button():
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
             self.clicked = True
+            self.disabled(window)
             # todo：做一个按下去的动画
             return True
         else:
@@ -129,7 +130,7 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
         y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
     """
     window.fill(WHITE)
-    pygame.display.flip()
+    # pygame.display.flip()
     grid = game.grid
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):

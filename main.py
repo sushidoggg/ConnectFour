@@ -66,10 +66,10 @@ while True:
         go_second_button.reset_click(False)
         restart_button.reset_click(False)
 
+        draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
         label_choose_order = FONT.render("Choose if you want to go first or last!", True, BLACK)
         screen.blit(label_choose_order, (SQUARESIZE, SQUARESIZE))
         pygame.display.update()
-        draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
 
         user_go_first = None
 
@@ -77,8 +77,8 @@ while True:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     position = event.pos
-                    go_first_button.is_valid(position)
-                    go_second_button.is_valid(position)
+                    go_first_button.is_valid(position, screen)
+                    go_second_button.is_valid(position, screen)
                 elif event.type == pygame.QUIT:
                     sys.exit()
 
@@ -135,9 +135,9 @@ while True:
                             else:
                                 label_not_valid = FONT.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
-                    elif hint_button.is_valid(event.pos):  # player click HINT button:
+                    elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
-                    elif restart_button.is_valid(event.pos):
+                    elif restart_button.is_valid(event.pos, screen):
                         game_status = 'before_game'
                         break
             else:  # AI goes first
@@ -172,9 +172,9 @@ while True:
                                 print("NOT VALID")
                                 label_not_valid = FONT.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
-                    elif hint_button.is_valid(event.pos):  # player click HINT button:
+                    elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
-                    elif restart_button.is_valid(event.pos):
+                    elif restart_button.is_valid(event.pos, screen):
                         game_status = 'before_game'
                         break
     elif game_status == 'game_over':
@@ -194,7 +194,7 @@ while True:
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONUP:
-                if restart_button.is_valid(event.pos):
+                if restart_button.is_valid(event.pos, screen):
                     game_status = 'before_game'
                     break
 
