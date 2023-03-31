@@ -41,22 +41,27 @@ class GameTree:
     - column == GAME_START_MOVE or 0 <= self.column < 7
     - self.column == GAME_START_MOVE or self.player in {PLAYER_ONE, PLAYER_TWO}
     - 0.0 <= self.score <= 1.0
+    # TODO: Introduce minimum score & average score
+    # TODO: Player
 
     """
-    column: int | str
-    player: int
+    move_column: int | str
+    initial_player: int
+    current_player: Optional[int]
     score: float
     _subtrees: dict[int, GameTree]
 
-    def __init__(self, column: str | int, player: int | None, score: Optional[float] = 0) -> None:
+    def __init__(self, move_column: str | int, initial_player: int, current_player: Optional[int],
+                 score: Optional[float] = 0) -> None:
         """ Initialize a new game tree.
 
         Precondition:
         - column == GAME_START_MOVE or 0 <= column < 7
         - player in {PLAYER_ONE, PLAYER_TWO}
         """
-        self.column = column
-        self.player = player
+        self.move_column = move_column
+        self.initial_player = initial_player
+        self.current_player = current_player
         self.score = score
         self._subtrees = {}
 
@@ -74,9 +79,35 @@ class GameTree:
         else:
             return None
 
+    def __str__(self) -> str:
+        """Return a string representation of this tree.
+        """
+        return self._str_indented(0)
+
+    def _str_indented(self, depth: int) -> str:
+        """Return an indented string representation of this tree.
+
+        The indentation level is specified by the <depth> parameter.
+
+        You MAY change the implementation of this method (e.g. to display different instance attributes)
+        as you work on this assignment.
+
+        Preconditions:
+            - depth >= 0
+        """
+        if self.get_next_player() == PLAYER_ONE:
+            turn_desc = "Player One"
+        else:
+            turn_desc = "Player Two"
+        move_desc = f'{self.move_column}: {self.score} -> {turn_desc}\n'
+        str_so_far = '  ' * depth + move_desc
+        for subtree in self._subtrees.values():
+            str_so_far += subtree._str_indented(depth + 1)
+        return str_so_far
+
     def get_next_player(self) -> int:
         """Return the player who should move next."""
-        if self.column == GAME_START_MOVE:
+        if self.move_column == GAME_START_MOVE:
             return PLAYER_ONE
         else:
             return self._get_opposite_player()
@@ -87,7 +118,7 @@ class GameTree:
         Since self.player is either 0 or 1 (PLAYER_ONE or PLAYER_TWO),
         we can use the x = 1 - x method to get the other possible value.
         """
-        return 1 - self.player
+        return 1 - self.current_player
 
     def __len__(self) -> int:
         """Return the number of items in this tree."""
@@ -95,7 +126,7 @@ class GameTree:
 
     def add_subtree(self, subtree: GameTree) -> None:
         """Add a subtree to this game tree."""
-        self._subtrees[subtree.column] = subtree
+        self._subtrees[subtree.move_column] = subtree
         self._update_score()
 
     def _update_score(self) -> None:
@@ -104,22 +135,23 @@ class GameTree:
         if len(self) == 1:
             # Do nothing when self is a leaf node
             return None
-        else:
-            # Choose the maximum score among all subtrees and reverse it to be self's score.
-            # TODO: Write a docstring and explain why
+
+        # Choose the maximum score among all subtrees and reverse it to be self's score.
+        # TODO: Write a docstring and explain why
+        if self.initial_player == self.current_player:
             max_subtree_score = max(subtree.score for subtree in self.get_subtrees())
-            self.score = 1 - max_subtree_score
+            self.score = - max_subtree_score
+        else:
+            min_subtree_score = min(subtree.score for subtree in self.get_subtrees())
+            self.score = - min_subtree_score
 
-    def insert_move_sequence(self, columns: list[str | int], score: Optional[int] = 0) -> None:
-        """ Insert the given sequence of moves into this tree.
+    def get_average_subtree_score(self) -> float:
+        """ Return the average of all subtree's score.
 
+        Return self.score if there is no subtree
         """
-        ...
-
-    def insert_move_sequence_helper(self, columns: list[str | int], index: int,
-                                    score: int = 0) -> None:
-        """
-        A helper funtion
-        """
-        if len(columns) <= index:
-            return
+        if len(self._subtrees) == 0:
+            return self.score
+        else:
+            subtrees = self.get_subtrees()
+            return sum(subtree.score for subtree in subtrees) / len(self._subtrees)
