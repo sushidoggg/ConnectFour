@@ -47,8 +47,6 @@ from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLA
     BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO, SIZE
 
 
-
-
 connect_four_game = ConnectFour()
 # game_over = False
 
@@ -83,7 +81,10 @@ draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_bu
 
 
 while True:
+    print(game_status)
+
     if game_status == 'before_game':
+        print('restarted')
         connect_four_game = ConnectFour()
         go_first_button.reset_click(False)
         go_second_button.reset_click(False)
@@ -92,6 +93,7 @@ while True:
         label_choose_order = FONT.render("Choose if you want to go first or last!", True, BLACK)
         screen.blit(label_choose_order, (SQUARESIZE, SQUARESIZE))
         pygame.display.update()
+        draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
 
         user_go_first = None
 
@@ -119,7 +121,7 @@ while True:
                 sys.exit()
 
             if event.type == pygame.MOUSEMOTION:
-                pygame.draw.rect(screen, WHITE, (0.5 * SQUARESIZE, SQUARESIZE, 7.5 * SQUARESIZE, SQUARESIZE))
+                pygame.draw.rect(screen, WHITE, (0.5 * SQUARESIZE, SQUARESIZE, 8.5 * SQUARESIZE, SQUARESIZE))
                 pygame.display.update()
                 posx, posy = event.pos[0], event.pos[1]
                 if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE:  # posx, posy in the region for selection and player is user :
@@ -207,15 +209,24 @@ while True:
                     elif restart_button.is_valid(event.pos):
                         game_status = 'before_game'
                         break
+                print('A1')
+            print('A2')
+        print('A3')
 
     elif game_status == 'game_over':
+        print('in')
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
+            print('I won')
             label = FONT.render("You win!", True, BLACK)
+            screen.blit(label, (SQUARESIZE, 10))
 
         else:
+            print('noooo')
             label = FONT.render("AI wins!", True, BLACK)
-        screen.blit(label, (SQUARESIZE, 10))
+            screen.blit(label, (SQUARESIZE, 10))
+
+        pygame.display.update()
         time.sleep(1)
 
         for event in pygame.event.get():
