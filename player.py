@@ -25,10 +25,12 @@ which is also Copyright (c) 2023 Mario Badr, David Liu, and Angela Zavaleta Bern
 """
 
 from __future__ import annotations
+
+import math
 import random
 from typing import Optional
 from game_tree import GameTree, GAME_START_MOVE
-from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
+from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, get_opposite_player
 
 
 class Player:
@@ -87,92 +89,7 @@ class AIPlayer(Player):
     def choose_column(self, game: ConnectFour) -> int:
         """ Return the column that is corresponding to the AI's move.
         """
-        # FIXME: some ugly code style... edit later
-
-        possible_columns = game.get_possible_columns()
-        if len(possible_columns) == 1:
-            return possible_columns[0]
-
-        if self._game_tree is None:
-            self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, game, self._depth, self.player_num)
-            # TODO: root move correct?
-        else:
-            update_complete_tree_to_depth(self._game_tree, game, self._depth, self.player_num)
-
-        last_move = game.get_last_move()
-        if last_move is None:
-            return random.choice(possible_columns)
-
-        last_player, last_move_position = last_move
-        last_move_column = last_move_position[0]
-        if last_player == self.player_num:
-            # last move is self, shouldn't reach this branch?
-            return random.choice(possible_columns)
-
-        # Recurse in last_player's tree
-        self._game_tree = self._game_tree.get_subtree_by_column(last_move_column)
-        subtrees = self._game_tree.get_subtrees()
-
-        # Find the subtree with the largest 'minimum score'
-        largest_score = max(subtree.score for subtree in subtrees)
-        largest_score_subtrees = [subtree for subtree in subtrees if subtree.score == largest_score]
-        if len(largest_score_subtrees) == 1:
-            self._game_tree = largest_score_subtrees[0]
-
-        else:
-            # Break ties by finding the largest 'average score'
-            largest_average_score = max(subtree.get_average_subtree_score() for subtree in largest_score_subtrees)
-            largest_average_score_subtrees = [subtree for subtree in largest_score_subtrees
-                                              if subtree.get_average_subtree_score() == largest_average_score]
-            if len(largest_average_score_subtrees) == 1:
-                self._game_tree = largest_average_score_subtrees[0]
-
-            else:
-                # Choose a random one
-                self._game_tree = random.choice(largest_average_score_subtrees)
-
-        return self._game_tree.move_column
-
-
-def score_last_move(game_state: ConnectFour) -> float:
-    """
-    Score a move made by the next player in game_state.
-    # TODO: add more docstring & preconditions
-    """
-    last_move = game_state.get_last_move()
-    if last_move is None:
-        return 0.0
-    else:
-        player, move_position = last_move
-
-    attacking_score = _score_move_by_player(game_state, move_position, player)
-    defending_score = _score_move_by_player(game_state, move_position, game_state.get_current_player())
-    score = attacking_score + defending_score
-
-    if score > 1.0:
-        score = 1.0
-
-    return score
-
-
-def _score_move_by_player(game_state: ConnectFour, move_position: tuple[int, int], player: int) -> float:
-    """
-    Score a move made by the next player in game_state.
-    # TODO: add more docstring & preconditions
-    """
-    connected_counts = game_state.get_connected_counts(move_position, player)
-
-    if 4 in connected_counts:
-        return 1.0
-
-    score = 0.0
-    if 3 in connected_counts:
-        score += 0.3 * connected_counts[3]
-    if 2 in connected_counts:
-        score += 0.1 * connected_counts[2]
-    if 1 in connected_counts:
-        score += 0.05
-    return score
+        ...
 
 
 def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFour, d: int,
@@ -184,23 +101,27 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
     - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
     # TODO: some more preconditions?
     """
-    current_player = game_state.get_opposite_player()
+    current_player = game_state.get_current_player()
+    last_player = get_opposite_player(current_player)
+    # Last player made the root_move. Current player will choose bewteen moves in subtrees
 
     if game_state.get_winner() is not None:
         # A winner already exists
         if game_state.get_winner() == current_player:
-            return GameTree(root_move, initial_player, current_player, score=1.0)
+            return GameTree(root_move, initial_player, last_player, score=1000)
+        elif game_state.get_winner() == last_player:
+            return GameTree(root_move, initial_player, last_player, score=-500)
         else:
-            # Shouldn't reach this branch
-            return GameTree(root_move, initial_player, current_player, score=-1.0)
+            # Game draws, so score = 0
+            return GameTree(root_move, initial_player, last_player, score=0)
 
     elif d == 0:
-        # Reaches maximum search depth
-        score = score_last_move(game_state)
-        return GameTree(root_move, initial_player, current_player, score=score)
+        # Reaches maximum search depth, score the current situation
+        score = score_position(game_state, get_opposite_player(last_player))
+        return GameTree(root_move, initial_player, last_player, score=score)
 
     else:
-        game_tree = GameTree(root_move, initial_player, current_player, score=0.0)
+        game_tree = GameTree(root_move, initial_player, last_player, score=0)
 
         possible_columns = game_state.get_possible_columns()
         for column in possible_columns:
@@ -219,8 +140,10 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
     - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
     # TODO: some more preconditions?
     """
-    if game_tree.get_subtrees():
-        # No subtrees
+    # FIXME: d == 0  should be treated differently, but how?
+
+    if not game_tree.get_subtrees():
+        # game_tree is a leaf
         if game_state.get_winner() is None and d >= 0:
 
             possible_columns = game_state.get_possible_columns()
@@ -234,15 +157,23 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
         for subtree in game_tree.get_subtrees():
             new_game_state = game_state.copy_and_record_player_move(subtree.move_column)
             update_complete_tree_to_depth(subtree, new_game_state, d - 1, initial_player)
+        game_tree.update_score()
 
 
 #######
 # 以下是alysa player和她的一堆东西
 #######
 class AlysaAIPlayer(Player):
+    """
+    # TODO
+    """
     _game_tree: GameTree | None
     _depth: int
+
     def __init__(self, player_num: int, search_depth: int, game_tree: Optional[GameTree]) -> None:
+        """
+        # TODO
+        """
         Player.__init__(self, player_num)
 
         if game_tree is not None:
@@ -254,32 +185,52 @@ class AlysaAIPlayer(Player):
         self._depth = search_depth
 
     def choose_column(self, game: ConnectFour) -> int:
-        print('jinlaile')
-        # return pick_best_col_alysa_AI(game, self.player_num)
-        return self.choose_column_minimax(game)
+        """
+        # TODO
+        """
+        # Recurse into last move's tree
+        last_move = game.get_last_move()
+        if last_move is None:
+            assert self.player_num == PLAYER_ONE
+            move_column = 3
+            self._game_tree = self._game_tree.get_subtree_by_column(move_column)
+            update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
+                                          self._depth, self.player_num)
+            return move_column
+
+        last_move_column = last_move[1][0]
+        self._game_tree = self._game_tree.get_subtree_by_column(last_move_column)
+
+        if self._game_tree is None:
+            print('Empty game tree.')
+            return random.choice(game.get_possible_columns())
+
+        subtrees = self._game_tree.get_subtrees()
+
+        if not subtrees:
+            print('No subtrees.')
+            return random.choice(game.get_possible_columns())
+
+        # Always choose the subtree with maximum score
+        max_score = max(subtree.score for subtree in subtrees)
+        max_score_tree = [subtree for subtree in subtrees if subtree.score == max_score]
+
+        move_column = random.choice(max_score_tree).move_column
+        self._game_tree = self._game_tree.get_subtree_by_column(move_column)
+        update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
+                                      self._depth, self.player_num)
+
+        print(self._game_tree)
+
+        return move_column
 
 
-    def choose_column_minimax(self, game: ConnectFour) -> int:
-        best_col = random.choice(game.get_possible_columns())
-        best_score = self._game_tree.get_subtrees()[best_col].minimax(game, self._depth, self.player_num, True)
-
-        for column in game.get_possible_columns():
-            new_score = self._game_tree.get_subtrees()[column].minimax(game, self._depth, self.player_num, True)
-            if new_score > best_score:
-                best_score = new_score
-                best_col = column
-
-        return best_col
-
-
-
-
-def evaluate_window_alysa_AI(window: list[int], player_number: int) -> int:
-    print('hahahah')
+def evaluate_window(window: list[int], player_number: int) -> int:
+    """
+    TODO
+    """
     score = 0
-    opponent_num = PLAYER_ONE
-    if player_number == PLAYER_ONE:
-        opponent_num = PLAYER_TWO
+    opponent_num = get_opposite_player(player_number)
 
     if window.count(player_number) == 4:
         score += 100
@@ -296,44 +247,42 @@ def evaluate_window_alysa_AI(window: list[int], player_number: int) -> int:
     return score
 
 
-def score_position_for_alysa_AI(connect_four: ConnectFour, player_number: int) -> int:
+def score_position(connect_four: ConnectFour, player_number: int) -> int:
     """
     piece = 0 if PLAYER_ONE, piece = 1 if PLAYER_TWO
     """
-    # Score horizontal
-    print('aba')
     score = 0
 
-    ## score center column
+    # score center column
     center_array = [row[GRID_WIDTH // 2] for row in connect_four.grid]
     center_count = center_array.count(player_number)
     score += 6 * center_count
 
+    # Score horizontal
     for r in range(GRID_HEIGHT):
         row_array = [i for i in list(connect_four.grid[r])]
         for c in range(GRID_WIDTH - 3):
             window = row_array[c: c + 4]
-            score += evaluate_window_alysa_AI(window, player_number)
-            print('2')
-            print(c)
+            score += evaluate_window(window, player_number)
+
     # score vertical
     for c in range(GRID_WIDTH):
         col_array = [row[c] for row in connect_four.grid]
         for r in range(GRID_HEIGHT - 3):
             window = col_array[r: r + 4]
-            score += evaluate_window_alysa_AI(window, player_number)
-            print('3')
+            score += evaluate_window(window, player_number)
+
     # score positive sloped diagonal
     for r in range(GRID_HEIGHT - 3):
         for c in range(GRID_WIDTH - 3):
             window = [connect_four.grid[r + i][c + i] for i in range(4)]
-            score += evaluate_window_alysa_AI(window, player_number)
+            score += evaluate_window(window, player_number)
 
     # score negative sloped diagonal
     for r in range(GRID_HEIGHT - 3):
         for c in range(GRID_WIDTH - 3):
             window = [connect_four.grid[r + 3 - i][c + i] for i in range(4)]
-            score += evaluate_window_alysa_AI(window, player_number)
+            score += evaluate_window(window, player_number)
 
     return score
 
@@ -349,7 +298,7 @@ def pick_best_col_alysa_AI(connect_four: ConnectFour, player_number: int) -> int
         # position = connect_four.get_move_position_by_column(col)
         # row = position[0]
         copy_connect_four = connect_four.copy_and_record_player_move(col)
-        score = score_position_for_alysa_AI(copy_connect_four, player_number)
+        score = score_position(copy_connect_four, player_number)
         if score > best_score:
             best_score = score
             best_col = col
