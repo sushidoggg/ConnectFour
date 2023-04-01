@@ -78,8 +78,7 @@ class Button():
     def show_disabled(self, window: pygame.Surface) -> None:
         """Make the button to a grey color
         It doesn't update screen in this function
-        Representation Invariants:
-            - self.disabled is True
+        self.disabled doesn't have to be True
         """
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
@@ -166,18 +165,22 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
         else:
             button.draw(window)
     # draw player one and its button and player two and its button
-    draw_one_disc(window, COLOR_PLAYER_ONE, (SQUARESIZE * 3, (2 + COLUMN_COUNT) * SQUARESIZE))
-    draw_one_disc(window, COLOR_PLAYER_TWO, (SQUARESIZE * 6, (2 + COLUMN_COUNT) * SQUARESIZE))
+    draw_one_disc(window, COLOR_PLAYER_ONE, (int(SQUARESIZE * 2.5), (2 + COLUMN_COUNT) * SQUARESIZE))
+    draw_one_disc(window, COLOR_PLAYER_TWO, (int(SQUARESIZE * 6.5), (2 + COLUMN_COUNT) * SQUARESIZE))
 
     text1 = FONT_WORDS.render('player one', True, BLACK)
     text2 = FONT_WORDS.render('player two', True, BLACK)
-    window.blit(text1, (int(SQUARESIZE * 3 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
-    window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
+    width, height = text2.get_size()
+    window.blit(text1, (int(SQUARESIZE * 2.5 - width / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
+    window.blit(text2, (int(SQUARESIZE * 6.6 - width / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     pygame.display.update()
 
 def print_win(screen: pygame.Surface, word: str) -> None:
+    """ Draw a horizontal line on the middle of the screen with the word in the middle
+    There should be three possible situations: word in [ties, you win, ai win]
+    No pygame.display.updated() is called in this function
+    """
     rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, int(WINDOW_HEIGHT / 2 - SQUARESIZE), WINDOW_WIDTH, SQUARESIZE), 2)
-    # screen.fill((127, 255, 212), rec)
     screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1] * 1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
 
     text = FONT_WIN_STATUS.render(word, True, BLACK)
