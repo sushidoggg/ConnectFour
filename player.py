@@ -107,9 +107,9 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
 
     if game_state.get_winner() is not None:
         # A winner already exists
-        if game_state.get_winner() == current_player:
+        if game_state.get_winner() == initial_player:
             return GameTree(root_move, initial_player, last_player, score=1000)
-        elif game_state.get_winner() == last_player:
+        elif game_state.get_winner() == get_opposite_player(initial_player):
             return GameTree(root_move, initial_player, last_player, score=-500)
         else:
             # Game draws, so score = 0
