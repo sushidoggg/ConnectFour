@@ -49,7 +49,12 @@ class Player:
         self.player_num = player_num
 
     def choose_column(self, game: ConnectFour) -> int:
-        """ Return a chosen column of grid given the current game.
+        """ Return a chosen column of grid given the current game state.
+        """
+        raise NotImplementedError
+
+    def hint_opponent(self, game: ConnectFour) -> int:
+        """ Return a chosen column of grid given the current game state.
         """
         raise NotImplementedError
 
@@ -59,6 +64,12 @@ class RandomPlayer(Player):
     """
 
     def choose_column(self, game: ConnectFour) -> int:
+        """ Return a randomly chosen column from all possible columns.
+        """
+        possible_columns = game.get_possible_columns()
+        return random.choice(possible_columns)
+
+    def hint_opponent(self, game: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
         possible_columns = game.get_possible_columns()
@@ -93,8 +104,8 @@ class AIPlayer(Player):
         # Recurse into last move's tree
         last_move = game.get_last_move()
         if last_move is None:
-            assert self.player_num == PLAYER_ONE
-            move_column = 3
+            assert self.player_num == PLAYER_ONE    # TODO: make this a precondition
+            move_column = GRID_WIDTH // 2
             self._game_tree = self._game_tree.get_subtree_by_column(move_column)
             update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
                                           self._depth, self.player_num)
@@ -122,9 +133,29 @@ class AIPlayer(Player):
         update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
                                       self._depth, self.player_num)
 
-        print(self._game_tree)
-
         return move_column
+
+    def hint_opponent(self, game: ConnectFour) -> int:
+        """ Return a column that the opponent should choose for their best interest according to self._game_tree
+        """
+        last_move = game.get_last_move()
+        if last_move is None:
+            return GRID_WIDTH // 2
+
+        if self._game_tree is None:
+            print('Empty game tree.')
+            return random.choice(game.get_possible_columns())
+
+        subtrees = self._game_tree.get_subtrees()
+
+        if not subtrees:
+            print('No subtrees.')
+            return random.choice(game.get_possible_columns())
+
+        subtrees = self._game_tree.get_subtrees()
+        min_score = min(subtree.score for subtree in subtrees)
+        min_score_tree = [subtree for subtree in subtrees if subtree.score == min_score]
+        return random.choice(min_score_tree).move_column
 
 
 def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFour, d: int,

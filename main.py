@@ -13,7 +13,7 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from player import AIPlayer, AlysaAIPlayer, RandomPlayer
+from player import AIPlayer, RandomPlayer
 
 import time
 import sys
@@ -76,12 +76,12 @@ while True:
         if go_first_button.is_valid(position, screen):
             user_go_first = True
             # AI_player = RandomPlayer(2)
-            AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
+            AI_player = AIPlayer(PLAYER_TWO, 5, None)
             # AI_player = AIPlayer(PLAYER_TWO, 5, None)
         else:
             user_go_first = False
             # AI_player = AIPlayer(PLAYER_ONE, 5, None)
-            AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+            AI_player = AIPlayer(PLAYER_ONE, 5, None)
             # AI_player = RandomPlayer(2)
         go_second_button.reset_disabled(True)
         go_first_button.reset_disabled(True)
