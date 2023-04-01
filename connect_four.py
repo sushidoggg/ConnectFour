@@ -280,9 +280,7 @@ class ConnectFour:
                     pos_x += direction_x
                     pos_y += direction_y
 
-            if connected_so_far <= 1:
-                continue
-            if connected_so_far not in count:
+            if connected_so_far not in count or connected_so_far == 1:
                 count[connected_so_far] = 1
             else:
                 count[connected_so_far] += 1

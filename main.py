@@ -57,7 +57,7 @@ draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_bu
 
 
 while True:
-    print(game_status)
+    # print(game_status)
 
     if game_status == 'before_game':
         print('restarted')
