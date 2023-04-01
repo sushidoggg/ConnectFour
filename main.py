@@ -26,7 +26,7 @@ from connect_four import ConnectFour
 pygame.init()  # pygame needs to be initialized before defining FONT
 
 from interface import SQUARESIZE, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS, UNOCCUPIED
+    BLACK, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS, UNOCCUPIED, AI_RESPONSE_TIME
 
 
 connect_four_game = ConnectFour()
@@ -47,7 +47,7 @@ go_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
 go_second_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
 buttons = [hint_button, restart_button, go_first_button, go_second_button]
 draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-
+clock = pygame.time.Clock()
 while True:
     # print(game_status)
     if game_status == 'before_game':
@@ -118,7 +118,7 @@ while True:
                             game_status = 'game_over'
                             break
                         # AI's turn
-                        time.sleep(1)
+                        clock.tick(AI_RESPONSE_TIME)
                         col_AI = AI_player.choose_column(connect_four_game)
                         drop_piece(connect_four_game, col_AI)
                         draw_window(screen, connect_four_game, buttons)
@@ -138,6 +138,7 @@ while True:
                     break
             elif not user_go_first:  # AI goes first
                 if connect_four_game.get_current_player() == PLAYER_ONE:  # if it's AI's turn
+                    clock.tick(AI_RESPONSE_TIME)
                     col_AI = AI_player.choose_column(connect_four_game)
                     drop_piece(connect_four_game, col_AI)
                     draw_window(screen, connect_four_game, buttons)
@@ -159,9 +160,6 @@ while True:
                             if connect_four_game.get_winner() is not None:
                                 game_status = 'game_over'
                                 break
-
-                            time.sleep(1)
-
                         else:
                             print("NOT VALID")
                             label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
@@ -194,3 +192,5 @@ while True:
 
     else:
         print('Invalid game_status')
+    print('ONE WHILE LOOP')
+    clock.tick(200)
