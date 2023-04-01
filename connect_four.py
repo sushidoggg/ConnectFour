@@ -34,14 +34,24 @@ class ConnectFour:
     Representing state of game of a ConnectFour game.
 
     Instance Attributes:
-    - grid: a list of list of int representing the current gaming grid.
-    - player_one_moves: list of tuples representing moves made by the first player.
-    - player_two_moves: list of tuples representing moves made by the second player.
+    - grid
+        A list of list of int that forms a grid of size 7x6 to represent the current gaming board.
+        In each spot of the grid, it is either filled with UNOCCUPIED, PLAYER_ONE, or PLAYER_TWO.
+    - player_one_moves: A list of tuples representing moves made by the first player.
+    - player_two_moves: A list of tuples representing moves made by the second player.
+
+    Private Instance Attributes:
+    - _possible_columns: A list of int representing valid columns that players can choose from.
+    - _winner: An int representing the winner of the game. None if the game has not ended yet.
 
     Representation Invariants:
-    - len(grid) == 6 and all(len(row) == 7 for row in grid)
-    - all(move[0] < 7 and move[1] < 6 for move in player_one_moves)
-    - all(move[0] < 7 and move[1] < 6 for move in player_two_moves)
+    - len(self.grid) == GRID_HEIGHT and all(len(row) == GRID_WIDTH for row in self.grid)
+    - all(self.grid[y][x] in {UNOCCUPIED, PLAYER_ONE, PLAYER_ONE} for y in range(GRID_HEIGHT)\
+     for x in range(GRID_WIDTH))
+    - all(0 <= move[0] < GRID_WIDTH and 0 <= move[1] < GRID_HEIGHT for move in self.player_one_moves)
+    - all(0 <= move[0] < GRID_WIDTH and 0 <= move[1] < GRID_HEIGHT for move in self.player_two_moves)
+    - all(0 <= move < GRID_WIDTH for move in self._possible_columns)
+    - self._winner in {None, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO}
     """
     grid: list[list[int]]
     player_one_moves: list[tuple[int, int]]
@@ -50,12 +60,45 @@ class ConnectFour:
     _winner: int | None
 
     def __init__(self) -> None:
-        """Initialize a new Connect 4 game"""
+        """Initialize a new Connect 4 game."""
         self.grid = [[UNOCCUPIED] * GRID_WIDTH for _ in range(GRID_HEIGHT)]
         self.player_one_moves = []
         self.player_two_moves = []
         self._possible_columns = [i for i in range(GRID_WIDTH)]
         self._winner = None
+
+    def __str__(self) -> str:
+        """
+        Return a string representation of the ConnectFour game.
+
+        We used the following symbols to represent the grid's state:
+        UNOCCUPIED: -, PLAYER_ONE: O, PLAYER_TWO: X
+
+        >>> connect_four = ConnectFour()
+        >>> connect_four.record_player_move(3)
+        >>> connect_four.record_player_move(4)
+        >>> connect_four.record_player_move(4)
+        >>> print(connect_four)
+        |   | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+        | 5 | - | - | - | - | - | - | - |
+        | 4 | - | - | - | - | - | - | - |
+        | 3 | - | - | - | - | - | - | - |
+        | 2 | - | - | - | - | - | - | - |
+        | 1 | - | - | - | - | O | - | - |
+        | 0 | - | - | - | O | X | - | - |
+
+        """
+        string = '|   | 0 | 1 | 2 | 3 | 4 | 5 | 6 |'
+        for y in range(GRID_HEIGHT - 1, -1, -1):
+            string += '\n| ' + str(y) + ' |'
+            for x in range(GRID_WIDTH):
+                if self.grid[y][x] == UNOCCUPIED:
+                    string += ' - |'
+                elif self.grid[y][x] == PLAYER_ONE:
+                    string += ' O |'
+                elif self.grid[y][x] == PLAYER_TWO:
+                    string += ' X |'
+        return string
 
     def get_current_player(self) -> int:
         """ Retern which player should make the next move.
@@ -71,73 +114,97 @@ class ConnectFour:
 
         Preconditions:
         - move_column in self._possible_columns
-        """
 
+        >>> connect_four = ConnectFour()
+        >>> connect_four.record_player_move(3)
+        >>> connect_four.record_player_move(3)
+        >>> connect_four.grid[0][3] == PLAYER_ONE
+        True
+        >>> connect_four.grid[1][3] == PLAYER_TWO
+        True
+        >>> connect_four.player_one_moves
+        [(3, 0)]
+        >>> connect_four.player_two_moves
+        [(3, 1)]
+        """
+        # Get an (x, y) representation of the move.
         move_position = self.get_move_position_by_column(move_column)
 
         self._update_grid(move_position)
         self._update_possible_columns()
         self._update_winner(move_position)
 
-        # The sequence here matters. These lines must be at the end because we determine the
-        # current player by comparing the length of self.player_one_moves and self.player_two_moves.
+        # These lines must be at the end because we determine the current player by comparing
+        # the length of self.player_one_moves and self.player_two_moves.
         if self.get_current_player() == PLAYER_ONE:
             self.player_one_moves.append(move_position)
         else:
             self.player_two_moves.append(move_position)
 
     def _update_grid(self, move_position: tuple[int, int]) -> None:
-        """
-        Update self.grid by inserting the current player's number into the grid according to move_position.
-        # TODO: write a doctest?
+        """ Update self.grid by inserting the current player's number into the grid according to move_position.
+
+        Preconditions:
+        - move_position[0] in self._possible_columns
+        - move_position[1] == 0 or move[move_position[1] - 1][move_position[0]] != UNOCCUPIED
         """
         self.grid[move_position[1]][move_position[0]] = self.get_current_player()
 
     def _update_possible_columns(self) -> None:
         """
-        Update the possible columns with empty spaces which the next move can choose from.
+        Update the possible columns from which the players can choose.
 
-        Set self._winner to be UNOCCUPIED if there's a draw (when there is no possible columns).
+        A column is considered to be a possible column if it is not filled up to the top.
         """
         self._possible_columns = []
         for x in range(GRID_WIDTH):
             if any(self.grid[y][x] == UNOCCUPIED for y in range(GRID_HEIGHT)):
                 self._possible_columns.append(x)
 
-        if not self._possible_columns:
-            # Game draws
-            self._winner = UNOCCUPIED
-
     def _update_winner(self, move_position: tuple[int, int]) -> None:
         """
         Update self._winner by checking if current player's move at move_position would result in him winning.
+
+        Set self._winner to be UNOCCUPIED if there's a draw (when there is no possible columns).
+
+        Preconditions:
+        - move_position[0] in self._possible_columns
+        - move_position[1] == 0 or move[move_position[1] - 1][move_position[0]] != UNOCCUPIED
         """
         if self._winner is not None:
             return
+
+        if not self._possible_columns:
+            # Update self._winner when game draws
+            self._winner = UNOCCUPIED
+
         current_player = self.get_current_player()
-        if self._is_four_connected(move_position, current_player):
+        if self._is_four_connected(move_position):
             self._winner = current_player
 
-    def _is_four_connected(self, move_position: tuple[int, int], player: int) -> bool:
+    def _is_four_connected(self, move_position: tuple[int, int]) -> bool:
         """ Checks whether player placing a move at this position will result in four connected discs.
 
         Preconditions:
-        - player in {PLAYER_ONE, PLAYER_TWO}
         - move_position[0] in self._possible_columns
+        - move_position[1] == 0 or move[move_position[1] - 1][move_position[0]] != UNOCCUPIED
         """
+        player = self.get_current_player()
+
         for i in range(4):
-            # Check for four orientations (horizontal, vertical, two diagonal) for 4 connected discs.
+            # Check for four orientations (horizontal, vertical, two diagonal) for connected discs.
             orientation_x, orientation_y = ORIENTATIONS[i]
-            connected_so_far = 1  # a disc is at least connected with itself
+            connected_so_far = 1  # a disc is at least connected to itself
 
             # Check for opposite directions. For example, left & right are two
-            # opposite directions for horizontal.
+            # opposite directions for the horizontal orientation.
             for direction_x, direction_y in ((orientation_x, orientation_y), (-orientation_x, -orientation_y)):
 
                 pos_x, pos_y = move_position[0] + direction_x, move_position[1] + direction_y
 
                 while 0 <= pos_x < GRID_WIDTH and 0 <= pos_y < GRID_HEIGHT \
                         and self.grid[pos_y][pos_x] == player and connected_so_far < 4:
+
                     connected_so_far += 1
                     # Update the next position to check
                     pos_x += direction_x
@@ -148,7 +215,11 @@ class ConnectFour:
         return False
 
     def copy_and_record_player_move(self, move_column: int) -> ConnectFour:
-        """ Return a copy of this game state with the given move recorded."""
+        """ Return a copy of this game state with the given move recorded.
+
+        Preconditions:
+        - move_column in self._possible_columns
+        """
         new_game = self._copy()
         new_game.record_player_move(move_column)
         return new_game
@@ -193,9 +264,9 @@ class ConnectFour:
         """ Get the last move of the state.
 
         The returned tuple is in the form of (player, move_position), where player is either
-        PLAYER_ONE or PLAYER_TWO, and move_position is in the form of (x, y).
+        PLAYER_ONE or PLAYER_TWO, and move_position is a tuple (x, y) coordinates.
 
-        Return None if no move has been made
+        Return None if no move has been made.
         """
         if len(self.player_one_moves) == 0:
             return None
@@ -213,42 +284,13 @@ class ConnectFour:
             return []
 
     def get_winner(self) -> Optional[str]:
-        """Return the winner of the game (PLAYER_ONE or PLAYER_TWO).
+        """Return the winner of the game (either PLAYER_ONE or PLAYER_TWO).
 
         Return None if the game is not over.
 
         Return UNOCCUPIED if there is a draw game.
         """
         return self._winner
-
-    def get_sequence_moves(self) -> list[tuple[int, int]]:
-        """
-        Return the move sequence made in this game.
-        """
-        moves_so_far = []
-        for i in range(len(self.player_one_moves)):
-            moves_so_far.append(self.player_one_moves[i])
-            if i < len(self.player_two_moves):
-                moves_so_far.append(self.player_two_moves[i])
-        return moves_so_far
-
-    def __str__(self) -> str:
-        """
-        Return a string representation of a ConnectFour game.
-
-        UNOCCUPIED = -, PLAYER_ONE = O, PLAYER_TWO = X
-        """
-        string = '|   | 0 | 1 | 2 | 3 | 4 | 5 | 6 |'
-        for y in range(GRID_HEIGHT - 1, -1, -1):
-            string += '\n| ' + str(y) + ' |'
-            for x in range(GRID_WIDTH):
-                if self.grid[y][x] == UNOCCUPIED:
-                    string += ' - |'
-                elif self.grid[y][x] == PLAYER_ONE:
-                    string += ' O |'
-                elif self.grid[y][x] == PLAYER_TWO:
-                    string += ' X |'
-        return string
 
     def get_connected_counts(self, move_position: tuple[int, int], player: int) -> dict[int | int]:
         """ Return mapping of number of connected discs to how many such consecutive discs exist
