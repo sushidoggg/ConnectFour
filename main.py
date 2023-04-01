@@ -55,7 +55,7 @@ go_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
 go_second_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
 draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
 
-
+font = pygame.font.SysFont("comicsansms", 22)
 while True:
     # print(game_status)
 
@@ -67,7 +67,7 @@ while True:
         restart_button.reset_click(False)
 
         draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-        label_choose_order = FONT.render("Choose if you want to go first or last!", True, BLACK)
+        label_choose_order = font.render("Choose if you want to go first or last!", True, BLACK)
         screen.blit(label_choose_order, (SQUARESIZE, SQUARESIZE))
         pygame.display.update()
 
@@ -133,7 +133,7 @@ while True:
                                     game_status = 'game_over'
                                     break
                             else:
-                                label_not_valid = FONT.render("Choose another column!", True, BLACK)
+                                label_not_valid = font.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
@@ -170,7 +170,7 @@ while True:
 
                             else:
                                 print("NOT VALID")
-                                label_not_valid = FONT.render("Choose another column!", True, BLACK)
+                                label_not_valid = font.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
@@ -180,11 +180,11 @@ while True:
     elif game_status == 'game_over':
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
-            label = FONT.render("You win!", True, BLACK)
+            label = font.render("You win!", True, BLACK)
             screen.blit(label, (SQUARESIZE, 10))
 
         else:
-            label = FONT.render("AI wins!", True, BLACK)
+            label = font.render("AI wins!", True, BLACK)
             screen.blit(label, (SQUARESIZE, 10))
 
         pygame.display.update()
