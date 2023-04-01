@@ -19,7 +19,7 @@ import time
 import sys
 import math
 import pygame
-from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc, print_win
+from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc, print_win, draw_hint_disc
 
 from connect_four import ConnectFour
 
@@ -131,7 +131,8 @@ while True:
                         screen.blit(label_not_valid, (SQUARESIZE, SQUARESIZE))
                         pygame.display.update()
                 elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
-                    ...  # TODO: UPDATE HINT BUTTON
+                    col = AI_player.hint_opponent(connect_four_game)
+                    draw_hint_disc(screen, col, connect_four_game)
                 elif restart_button.is_valid(event.pos, screen):
                     game_status = 'before_game'
                     break
@@ -167,7 +168,8 @@ while True:
                             screen.blit(label_not_valid, (SQUARESIZE, SQUARESIZE))
                             pygame.display.update()
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
-                        ...  # TODO: UPDATE HINT
+                        col = AI_player.hint_opponent(connect_four_game)
+                        draw_hint_disc(screen, col, connect_four_game)
                     elif restart_button.is_valid(event.pos, screen):
                         game_status = 'before_game'
                         break

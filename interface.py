@@ -114,6 +114,18 @@ class Button():
         """Change self.disabled to the given boolean value"""
         self.disabled = value
 
+def draw_hint_disc(window: pygame.Surface, col: int, game: ConnectFour):
+    # draw_one_dics and flipped
+    x = int(SQUARESIZE * (1 + col) + SQUARESIZE / 2)
+    # find the first row with column = col,
+    col, row = game.get_move_position_by_column(col)  # row is from bottom to top
+    y = int((ROW_COUNT - row + 2) * SQUARESIZE - SQUARESIZE / 2)
+    draw_one_disc(window, DISABLE_COLOR, (x, y))
+    pygame.display.update()
+    # draw_one_disc(window, WHITE, (x, y))
+    # pygame.display.update()
+    # draw_one_disc(window, DISABLE_COLOR, (x, y))
+    # pygame.display.update()
 
 def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
     """Draw a beautiful disc on window at the given window with given color
