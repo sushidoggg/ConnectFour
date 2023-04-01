@@ -34,8 +34,8 @@ DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE
 pygame.init()
 
-FONT_WORDS = pygame.font.SysFont("comicsansms", int(SQUARESIZE/2.5))
-FONT_WIN_STATUS = pygame.font.SysFont("Times", int(SQUARESIZE/1.5))
+FONT_WORDS = pygame.font.SysFont("Courier", int(SQUARESIZE/3))
+FONT_WIN_STATUS = pygame.font.SysFont("Courier", int(SQUARESIZE/1.5))
 FONT_SIZE = int(SQUARESIZE / 2.5)
 FONT_BUTTON = pygame.font.Font(None, FONT_SIZE)
 
