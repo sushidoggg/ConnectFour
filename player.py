@@ -240,6 +240,8 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
 # 以下是alysa player和她的一堆东西
 #######
 class AlysaAIPlayer(Player):
+    _game_tree: GameTree | None
+    _depth: int
     def __init__(self, player_num: int, search_depth: int, game_tree: Optional[GameTree]) -> None:
         Player.__init__(self, player_num)
 
@@ -253,30 +255,48 @@ class AlysaAIPlayer(Player):
 
     def choose_column(self, game: ConnectFour) -> int:
         print('jinlaile')
-        return pick_best_col_alysa_AI(game, self)
+        # return pick_best_col_alysa_AI(game, self.player_num)
+        return self.choose_column_minimax(game)
 
 
-def evaluate_window_alysa_AI(window: list[int], player) -> int:
+    def choose_column_minimax(self, game: ConnectFour) -> int:
+        best_col = random.choice(game.get_possible_columns())
+        best_score = self._game_tree.get_subtrees()[best_col].minimax(game, self._depth, self.player_num, True)
+
+        for column in game.get_possible_columns():
+            new_score = self._game_tree.get_subtrees()[column].minimax(game, self._depth, self.player_num, True)
+            if new_score > best_score:
+                best_score = new_score
+                best_col = column
+
+        return best_col
+
+
+
+
+def evaluate_window_alysa_AI(window: list[int], player_number: int) -> int:
     print('hahahah')
     score = 0
     opponent_num = PLAYER_ONE
-    if player.player_num == PLAYER_ONE:
+    if player_number == PLAYER_ONE:
         opponent_num = PLAYER_TWO
 
-    if window.count(player.player_num) == 4:
+    if window.count(player_number) == 4:
         score += 100
-    elif window.count(player.player_num) == 3 and window.count(UNOCCUPIED) == 1:
+    elif window.count(player_number) == 3 and window.count(UNOCCUPIED) == 1:
         score += 10
-    elif window.count(player.player_num == 2) and window.count(UNOCCUPIED) == 2:
+    elif window.count(player_number) == 2 and window.count(UNOCCUPIED) == 2:
         score += 5
 
     if window.count(opponent_num) == 3 and window.count(UNOCCUPIED) == 1:
         score -= 80
+    elif window.count(opponent_num) == 2 and window.count(UNOCCUPIED) == 2:
+        score -= 8
 
     return score
 
 
-def score_position_for_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
+def score_position_for_alysa_AI(connect_four: ConnectFour, player_number: int) -> int:
     """
     piece = 0 if PLAYER_ONE, piece = 1 if PLAYER_TWO
     """
@@ -286,14 +306,14 @@ def score_position_for_alysa_AI(connect_four: ConnectFour, player: Player) -> in
 
     ## score center column
     center_array = [row[GRID_WIDTH // 2] for row in connect_four.grid]
-    center_count = center_array.count(player.player_num)
+    center_count = center_array.count(player_number)
     score += 6 * center_count
 
     for r in range(GRID_HEIGHT):
         row_array = [i for i in list(connect_four.grid[r])]
         for c in range(GRID_WIDTH - 3):
             window = row_array[c: c + 4]
-            score += evaluate_window_alysa_AI(window, player)
+            score += evaluate_window_alysa_AI(window, player_number)
             print('2')
             print(c)
     # score vertical
@@ -301,24 +321,24 @@ def score_position_for_alysa_AI(connect_four: ConnectFour, player: Player) -> in
         col_array = [row[c] for row in connect_four.grid]
         for r in range(GRID_HEIGHT - 3):
             window = col_array[r: r + 4]
-            score += evaluate_window_alysa_AI(window, player)
+            score += evaluate_window_alysa_AI(window, player_number)
             print('3')
     # score positive sloped diagonal
     for r in range(GRID_HEIGHT - 3):
         for c in range(GRID_WIDTH - 3):
             window = [connect_four.grid[r + i][c + i] for i in range(4)]
-            score += evaluate_window_alysa_AI(window, player)
+            score += evaluate_window_alysa_AI(window, player_number)
 
     # score negative sloped diagonal
     for r in range(GRID_HEIGHT - 3):
         for c in range(GRID_WIDTH - 3):
             window = [connect_four.grid[r + 3 - i][c + i] for i in range(4)]
-            score += evaluate_window_alysa_AI(window, player)
+            score += evaluate_window_alysa_AI(window, player_number)
 
     return score
 
 
-def pick_best_col_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
+def pick_best_col_alysa_AI(connect_four: ConnectFour, player_number: int) -> int:
     print('5')
     best_score = -10000
 
@@ -328,9 +348,8 @@ def pick_best_col_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
     for col in valid_columns:
         # position = connect_four.get_move_position_by_column(col)
         # row = position[0]
-        copy_connect_four = connect_four.copy()
-        copy_connect_four.record_player_move(col)
-        score = score_position_for_alysa_AI(copy_connect_four, player)
+        copy_connect_four = connect_four.copy_and_record_player_move(col)
+        score = score_position_for_alysa_AI(copy_connect_four, player_number)
         if score > best_score:
             best_score = score
             best_col = col
