@@ -20,7 +20,7 @@ from connect_four import ConnectFour
 
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT, COLUMN_COUNT = 6, 7
-SQUARESIZE = 80
+SQUARESIZE = 70
 RADIUS = int(SQUARESIZE / 3.5)
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
 SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -174,12 +174,12 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
     window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     pygame.display.update()
 
-def print_win(screen: pygame.Surface, player: str) -> None:
+def print_win(screen: pygame.Surface, word: str) -> None:
     rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, int(WINDOW_HEIGHT / 2 - SQUARESIZE), WINDOW_WIDTH, SQUARESIZE), 2)
     # screen.fill((127, 255, 212), rec)
     screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1] * 1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
 
-    text = FONT_WIN_STATUS.render(f"{player} wins!", True, BLACK)
+    text = FONT_WIN_STATUS.render(word, True, BLACK)
     text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2 - SQUARESIZE/2))
     screen.blit(text, text_rect)
 
