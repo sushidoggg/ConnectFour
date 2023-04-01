@@ -96,16 +96,24 @@ class ConnectFour:
     def _update_possible_columns(self) -> None:
         """
         Update the possible columns with empty spaces which the next move can choose from.
+
+        Set self._winner to be UNOCCUPIED if there's a draw (when there is no possible columns).
         """
         self._possible_columns = []
         for x in range(GRID_WIDTH):
             if any(self.grid[y][x] == UNOCCUPIED for y in range(GRID_HEIGHT)):
                 self._possible_columns.append(x)
 
+        if not self._possible_columns:
+            # Game draws
+            self._winner = UNOCCUPIED
+
     def _update_winner(self, move_position: tuple[int, int]) -> None:
         """
         Update self._winner by checking if current player's move at move_position would result in him winning.
         """
+        if self._winner is not None:
+            return
         current_player = self.get_current_player()
         if self._is_four_connected(move_position, current_player):
             self._winner = current_player
@@ -141,19 +149,19 @@ class ConnectFour:
 
     def copy_and_record_player_move(self, move_column: int) -> ConnectFour:
         """ Return a copy of this game state with the given move recorded."""
-        connect_four = self._copy()
-        connect_four.record_player_move(move_column)
-        return connect_four
+        new_game = self._copy()
+        new_game.record_player_move(move_column)
+        return new_game
 
     def _copy(self) -> ConnectFour:
         """ Return a copy of this game state."""
-        connect_four = ConnectFour()
-        connect_four.grid = self.grid
-        connect_four.player_one_moves = self.player_one_moves
-        connect_four.player_two_moves = self.player_two_moves
-        connect_four._possible_columns = self._possible_columns
-        connect_four._winner = self._winner
-        return connect_four
+        new_game = ConnectFour()
+        new_game.grid = [[self.grid[y][x] for x in range(GRID_WIDTH)] for y in range(GRID_HEIGHT)]
+        new_game.player_one_moves.extend(self.player_one_moves)
+        new_game.player_two_moves.extend(self.player_two_moves)
+        new_game._possible_columns.extend(self._possible_columns)
+        new_game._winner = self._winner
+        return new_game
 
     def get_move_position_by_column(self, move_column: int) -> tuple[int, int]:
         """ Find the position of a disc in the grid if it is placed at move_column.
@@ -173,6 +181,29 @@ class ConnectFour:
             if self.grid[y][move_column] == UNOCCUPIED:
                 return (move_column, y)
 
+    def get_opposite_player(self) -> int:
+        """Return the opposite player of self.player.
+
+        Since the current player is either 0 or 1 (PLAYER_ONE or PLAYER_TWO),
+        we can use the x = 1 - x method to get the other possible value.
+        """
+        return 1 - self.get_current_player()
+
+    def get_last_move(self) -> tuple[int, tuple[int, int]] | None:
+        """ Get the last move of the state.
+
+        The returned tuple is in the form of (player, move_position), where player is either
+        PLAYER_ONE or PLAYER_TWO, and move_position is in the form of (x, y).
+
+        Return None if no move has been made
+        """
+        if len(self.player_one_moves) == 0:
+            return None
+        elif len(self.player_one_moves) == len(self.player_two_moves):
+            return (PLAYER_TWO, self.player_two_moves[-1])
+        else:
+            return (PLAYER_ONE, self.player_one_moves[-1])
+
     def get_possible_columns(self) -> list[int]:
         """ Return the possible moves for the current game state, or [] if a player has won the game.
         """
@@ -185,6 +216,8 @@ class ConnectFour:
         """Return the winner of the game (PLAYER_ONE or PLAYER_TWO).
 
         Return None if the game is not over.
+
+        Return UNOCCUPIED if there is a draw game.
         """
         return self._winner
 
@@ -199,7 +232,25 @@ class ConnectFour:
                 moves_so_far.append(self.player_two_moves[i])
         return moves_so_far
 
-    def get_connected_counts(self, move_column: int, player: int) -> dict[int | int]:
+    def __str__(self) -> str:
+        """
+        Return a string representation of a ConnectFour game.
+
+        UNOCCUPIED = -, PLAYER_ONE = O, PLAYER_TWO = X
+        """
+        string = '|   | 0 | 1 | 2 | 3 | 4 | 5 | 6 |'
+        for y in range(GRID_HEIGHT - 1, -1, -1):
+            string += '\n| ' + str(y) + ' |'
+            for x in range(GRID_WIDTH):
+                if self.grid[y][x] == UNOCCUPIED:
+                    string += ' - |'
+                elif self.grid[y][x] == PLAYER_ONE:
+                    string += ' O |'
+                elif self.grid[y][x] == PLAYER_TWO:
+                    string += ' X |'
+        return string
+
+    def get_connected_counts(self, move_position: tuple[int, int], player: int) -> dict[int | int]:
         """ Return mapping of number of connected discs to how many such consecutive discs exist
         if the player makes the move at move_column.
 
@@ -210,7 +261,6 @@ class ConnectFour:
         - player in {PLAYER_ONE, PLAYER_TWO}
         - move_column in self._possible_columns
         """
-        move_position = self.get_move_position_by_column(move_column)
         count = dict()
 
         for i in range(4):
@@ -224,13 +274,13 @@ class ConnectFour:
 
                 pos_x, pos_y = move_position[0] + direction_x, move_position[1] + direction_y
                 while 0 <= pos_x < GRID_WIDTH and 0 <= pos_y < GRID_HEIGHT \
-                        and self.grid[pos_y][pos_x] == player:
+                        and self.grid[pos_y][pos_x] == player and connected_so_far < 4:
                     connected_so_far += 1
                     # Update the next position to check
                     pos_x += direction_x
                     pos_y += direction_y
 
-            if connected_so_far not in count:
+            if connected_so_far not in count or connected_so_far == 1:
                 count[connected_so_far] = 1
             else:
                 count[connected_so_far] += 1

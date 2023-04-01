@@ -19,19 +19,16 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from connect_four import ConnectFour
-from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, BLACK, ROW_COUNT, COLUMN_COUNT
 import pygame
+from connect_four import ConnectFour
 
-def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int]) -> None:
-    '''Draw a beautiful disc on window at the given window with given color'''
-    ...
+UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
+ROW_COUNT, COLUMN_COUNT = 6, 7
+SQUARESIZE = 50
+RADIUS = int(SQUARESIZE / 3)
+WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
+SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 
-<<<<<<< Updated upstream
-def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
-    '''Based on the given sqaure size, draw the whole interface on the given window at the current status of game
-        If game.grid are all unoccupied, then just draw the window'''
-=======
 pygame.init()
 BUTTOM_COLUMN_WIDTH = ...
 COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
@@ -122,63 +119,76 @@ def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: 
     pygame.display.update()
 
 
+
 def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]) -> None:
     """ Based on the given sqaure size, draw the whole interface on the given window at the current status of game
         If game.grid are all unoccupied, then just draw the window.
         game.grid record the bottom row first, top row last. Wherease on pygame, the location of top row has smallest
         y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
     """
->>>>>>> Stashed changes
     window.fill(WHITE)
-    pygame.display.flip()
+    # pygame.display.flip()
     grid = game.grid
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            pygame.draw.rect(window, BLUE, ((c + 1)* SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
             pygame.draw.circle(window, WHITE, (
                 int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            if grid[r][c] == 1:  # Player Two's disc
-                pygame.draw.circle(window, COLOR_PLAYER_TWO, (
-                    int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
-            elif grid[r][c] == 0:  # Player One's disc
-                pygame.draw.circle(window, COLOR_PLAYER_ONE, (
-                    int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
+            if grid[ROW_COUNT - 1 - r][c] == PLAYER_TWO:  # Player Two's disc
+                center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
+                _draw_one_disc(window, COLOR_PLAYER_TWO, center)
+            elif grid[ROW_COUNT - 1 - r][c] == PLAYER_ONE:  # Player One's disc
+                center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
+                _draw_one_disc(window, COLOR_PLAYER_ONE, center)
+    # draw the buttons:
+    for button in buttons:
+        button.draw(window)
     pygame.display.update()
+
+
+def drop_piece(game: ConnectFour, col: int) -> None:
+    """
+    Represent the player's move on the board.
+    """
+    # board[row][col] = piece
+    game.record_player_move(col)
+
+
+def is_valid_location(game: ConnectFour, col: int) -> bool:
+    """
+    Return if the current column is a valid column.
+    """
+    # return board[ROW_COUNT - 1][col] == -1
+    return col in game.get_possible_columns()
+
+
+# def get_next_open_row(game: ConnectFour, col: int) -> int:
+#     """
+#     Get the next avaible row position for the current column.
+#     """
+#     # for r in range(ROW_COUNT):
+#     #     if board[r][col] == -1:
+#     #         return r
+#     return game.get_move_position_by_column(col)[0]
+
+
 
 
 if __name__ == '__main__':
     # 模拟main里面的window
-    pygame.display.init()
+    pygame.init()
     window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    window.fill((0,0,0))
     pygame.display.set_caption("Connect Four")
+    pygame.display.flip()
+    b1 = Button(100, 100, "Heelo")
+    b1.draw(window)
+    pygame.display.update()
+
     # main while loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-
-
-
-class Disc():
-    '''A class that represents the disc that players played
-    Instance Attributes:
-        - position: list[tuple]
-        - color: list[tuple]
-    Representation Invariants:
-        - color in {COLOR_PLAYER_TWO, COLOR_PLAYER_ONE}'''
-    ...
-
-class Player(pygame.sprite.Sprite):
-    '''A class that represents Player.
-    # todo：return the column int player choose'''
-    ...
-
-class AI(pygame.sprite.Sprite):
-    ...
-
-
-def is_valid_position() -> bool:
-# return the user's move as an integer to connect_four.py.
-    ...
