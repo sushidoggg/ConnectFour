@@ -13,20 +13,20 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from player import AIPlayer, AlysaAIPlayer
+from player import AIPlayer, AlysaAIPlayer, RandomPlayer
 
 import time
 import sys
 import math
 import pygame
-from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc
+from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc, print_win
 
 from connect_four import ConnectFour
 
 pygame.init()  # pygame needs to be initialized before defining FONT
 
 from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS
+    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BOTTON, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS
 
 
 connect_four_game = ConnectFour()
@@ -73,12 +73,14 @@ while True:
 
         if go_first_button.is_valid(position, screen):
             user_go_first = True
-            AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
+            AI_player = RandomPlayer(2)
+            # AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
             # AI_player = AIPlayer(PLAYER_TWO, 5, None)
         else:
             user_go_first = False
             # AI_player = AIPlayer(PLAYER_ONE, 5, None)
-            AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+            # AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+            AI_player = RandomPlayer(2)
         go_second_button.disabled, go_first_button.disabled = True, True
         go_second_button.show_disabled(screen)
         go_first_button.show_disabled(screen)
@@ -176,34 +178,15 @@ while True:
     elif game_status == 'game_over':
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
-
-            rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, 245, 550, 60), 2)
-            # screen.fill((127, 255, 212), rec)
-            screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1]*1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
-
-            font2 = pygame.font.SysFont("Times", 50)
-            text = font2.render("You win!", True, BLACK)
-            text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2))
-            screen.blit(text, text_rect)
-
-            # label = font.render("You win!", True, BLACK)
-            # screen.blit(label, (SQUARESIZE, 10))
-
+            print_win(screen, 'You')
         else:
-            rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, 245, 550, 60), 2)
-            # screen.fill((127, 255, 212), rec)
-            screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1] * 1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
-
-            font2 = pygame.font.SysFont("Times", 50)
-            text = font2.render("AI wins!", True, BLACK)
-            text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2))
-            screen.blit(text, text_rect)
+            print_win(screen, 'AI')
 
             # label = FONT_WORDS.render("AI wins!", True, BLACK)
             # screen.blit(label, (SQUARESIZE, 10))
 
         pygame.display.update()
-        time.sleep(1)
+        time.sleep(0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
