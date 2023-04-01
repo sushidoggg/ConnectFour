@@ -34,7 +34,7 @@ DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE
 pygame.init()
 FONT_SIZE = int(SQUARESIZE / 2.5)
-FONT = pygame.font.Font(None, FONT_SIZE)
+FONT_BUTTON = pygame.font.Font(None, FONT_SIZE)
 
 
 class Button():
@@ -65,7 +65,7 @@ class Button():
         darker = (int(BUTTON_COLOR[0] * 0.7), int(BUTTON_COLOR[1] * 0.7), int(BUTTON_COLOR[2] * 0.7))
         pygame.draw.rect(window, darker, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 4, border_radius=BORDER_RADIUS)
         # draw word
-        text = FONT.render(self.word, True, WHITE)
+        text = FONT_BUTTON.render(self.word, True, WHITE)
         w, h = text.get_size()
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
@@ -83,7 +83,7 @@ class Button():
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
         pygame.draw.rect(window, DISABLE_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), border_radius=BORDER_RADIUS)
         # draw word
-        text = FONT.render(self.word, True, BLACK)
+        text = FONT_BUTTON.render(self.word, True, BLACK)
         w, h = text.get_size()
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
@@ -123,7 +123,6 @@ def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: t
     # create a darker color and draw the outer circle of the disc
     darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
     pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
-
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]) -> None:
@@ -166,8 +165,8 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
     # draw player one and its button and player two and its button
     draw_one_disc(window, COLOR_PLAYER_ONE, (SQUARESIZE * 3, (2 + COLUMN_COUNT) * SQUARESIZE))
     draw_one_disc(window, COLOR_PLAYER_TWO, (SQUARESIZE * 6, (2 + COLUMN_COUNT) * SQUARESIZE))
-    text1 = FONT.render('player one', True, BLACK)
-    text2 = FONT.render('player two', True, BLACK)
+    text1 = FONT_BUTTON.render('player one', True, BLACK)
+    text2 = FONT_BUTTON.render('player two', True, BLACK)
     window.blit(text1, (int(SQUARESIZE * 3 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     pygame.display.update()

@@ -26,8 +26,7 @@ from connect_four import ConnectFour
 pygame.init()  # pygame needs to be initialized before defining FONT
 
 from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO, SIZE
-
+    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BUTTON, PLAYER_ONE, PLAYER_TWO, SIZE
 
 connect_four_game = ConnectFour()
 # game_over = False
