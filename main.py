@@ -13,20 +13,21 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from player import AIPlayer, AlysaAIPlayer
+from player import AIPlayer, AlysaAIPlayer, RandomPlayer
 
 import time
 import sys
 import math
 import pygame
-from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc
+from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc, print_win
 
 from connect_four import ConnectFour
 
 pygame.init()  # pygame needs to be initialized before defining FONT
 
 from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BUTTON, PLAYER_ONE, PLAYER_TWO, SIZE
+    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BOTTON, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS
+
 
 connect_four_game = ConnectFour()
 # game_over = False
@@ -47,7 +48,6 @@ go_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
 go_second_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
 draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
 
-font = pygame.font.SysFont("comicsansms", 22)
 while True:
     # print(game_status)
     if game_status == 'before_game':
@@ -58,7 +58,7 @@ while True:
         restart_button.reset_disabled(False)
 
         draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-        label_choose_order = font.render("Choose if you want to go first or last!", True, BLACK)
+        label_choose_order = FONT_WORDS.render("Choose if you want to go first or last!", True, BLACK)
         screen.blit(label_choose_order, (SQUARESIZE, SQUARESIZE))
         pygame.display.update()
 
@@ -73,12 +73,14 @@ while True:
 
         if go_first_button.is_valid(position, screen):
             user_go_first = True
-            AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
+            AI_player = RandomPlayer(2)
+            # AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
             # AI_player = AIPlayer(PLAYER_TWO, 5, None)
         else:
             user_go_first = False
             # AI_player = AIPlayer(PLAYER_ONE, 5, None)
-            AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+            # AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+            AI_player = RandomPlayer(2)
         go_second_button.disabled, go_first_button.disabled = True, True
         go_second_button.show_disabled(screen)
         go_first_button.show_disabled(screen)
@@ -128,7 +130,7 @@ while True:
                                     game_status = 'game_over'
                                     break
                             else:
-                                label_not_valid = font.render("Choose another column!", True, BLACK)
+                                label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
                                 pygame.display.update()
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
@@ -165,7 +167,7 @@ while True:
 
                             else:
                                 print("NOT VALID")
-                                label_not_valid = font.render("Choose another column!", True, BLACK)
+                                label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
                                 pygame.display.update()
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
@@ -176,15 +178,15 @@ while True:
     elif game_status == 'game_over':
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
-            label = font.render("You win!", True, BLACK)
-            screen.blit(label, (SQUARESIZE, 10))
-
+            print_win(screen, 'You')
         else:
-            label = font.render("AI wins!", True, BLACK)
-            screen.blit(label, (SQUARESIZE, 10))
+            print_win(screen, 'AI')
+
+            # label = FONT_WORDS.render("AI wins!", True, BLACK)
+            # screen.blit(label, (SQUARESIZE, 10))
 
         pygame.display.update()
-        time.sleep(1)
+        time.sleep(0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

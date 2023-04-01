@@ -33,6 +33,9 @@ BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5) , int(SQUARESIZE * 0.7)
 DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE
 pygame.init()
+
+FONT_WORDS = pygame.font.SysFont("comicsansms", int(SQUARESIZE/2.5))
+FONT_WIN_STATUS = pygame.font.SysFont("Times", int(SQUARESIZE/1.5))
 FONT_SIZE = int(SQUARESIZE / 2.5)
 FONT_BUTTON = pygame.font.Font(None, FONT_SIZE)
 
@@ -101,7 +104,7 @@ class Button():
         if left <= position[0] <= right and up <= position[1] <= down:
             self.show_disabled(window)
             pygame.display.update()
-            time.sleep(0.5)
+            time.sleep(0.2)
             self.draw(window)
             pygame.display.update()
             return True
@@ -171,6 +174,14 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
     window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     pygame.display.update()
 
+def print_win(screen: pygame.Surface, player: str) -> None:
+    rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, int(WINDOW_HEIGHT / 2 - SQUARESIZE), WINDOW_WIDTH, SQUARESIZE), 2)
+    # screen.fill((127, 255, 212), rec)
+    screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1] * 1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
+
+    text = FONT_WIN_STATUS.render(f"{player} wins!", True, BLACK)
+    text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2 - SQUARESIZE/2))
+    screen.blit(text, text_rect)
 
 def drop_piece(game: ConnectFour, col: int) -> None:
     """
