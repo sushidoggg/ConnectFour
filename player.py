@@ -55,6 +55,7 @@ class Player:
 class RandomPlayer(Player):
     """ A player that performs randomly by selecting one of the possible moves at random.
     """
+
     def choose_column(self, game: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
@@ -234,6 +235,60 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
             new_game_state = game_state.copy_and_record_player_move(subtree.move_column)
             update_complete_tree_to_depth(subtree, new_game_state, d - 1, initial_player)
 
+
+#######
+# 以下是alysa player和她的一堆东西
+#######
+class AlysaAIPlayer(Player):
+    def __init__(self, player_num: int, search_depth: int, game_tree: Optional[GameTree]) -> None:
+        Player.__init__(self, player_num)
+
+        if game_tree is not None:
+            self._game_tree = game_tree
+        else:
+            self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, ConnectFour(), search_depth,
+                                                              self.player_num)
+
+        self._depth = search_depth
+
+    def choose_column(self, game: ConnectFour) -> int:
+        return pick_best_col_alysa_AI(game, self)
+
+def score_position_for_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
+    """
+    piece = 0 if PLAYER_ONE, piece = 1 if PLAYER_TWO
+    """
+    # Score horizontal
+    score = 0
+    for r in range(GRID_HEIGHT):
+        row_array = [i for i in list(connect_four.grid[r])]
+        for c in range(GRID_WIDTH - 3):
+            window = row_array[c: c + 4]
+            if window.count(player.player_num) == 4:
+                score += 100
+            elif window.count(player.player_num) == 3 and window.count(UNOCCUPIED) == 1:
+                score += 10
+
+    return score
+
+
+def pick_best_col_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
+    best_score = 0
+
+    valid_columns = connect_four.get_possible_columns()
+    best_col = random.choice(valid_columns)
+
+    for col in valid_columns:
+        # position = connect_four.get_move_position_by_column(col)
+        # row = position[0]
+        copy_connect_four = connect_four.copy()
+        copy_connect_four.record_player_move(col)
+        score = score_position_for_alysa_AI(copy_connect_four, player)
+        if score > best_score:
+            best_score = score
+            best_col = col
+
+    return best_col
 
 '''
 if __name__ == '__main__':

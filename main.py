@@ -13,7 +13,7 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-from player import AIPlayer
+from player import AIPlayer, AlysaAIPlayer
 
 import time
 import sys
@@ -50,7 +50,9 @@ draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_bu
 
 font = pygame.font.SysFont("comicsansms", 22)
 while True:
+
     # print(game_status)
+
     if game_status == 'before_game':
         print('restarted')
         connect_four_game = ConnectFour()
@@ -75,6 +77,14 @@ while True:
         # pygame.draw.rect(screen, WHITE, (SQUARESIZE, SQUARESIZE, 7 * SQUARESIZE, SQUARESIZE))
         if go_first_button.is_valid(position, screen):
             user_go_first = True
+
+            AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
+            # AI_player = AIPlayer(PLAYER_TWO, 5, None)
+        else:
+            user_go_first = False
+            # AI_player = AIPlayer(PLAYER_ONE, 5, None)
+            AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+
             go_second_button.disabled = True
             go_second_button.show_disabled(screen)
             pygame.display.update()
@@ -85,6 +95,7 @@ while True:
             go_first_button.show_disabled(screen)
             pygame.display.update()
             AI_player = AIPlayer(PLAYER_ONE, 5, None)
+
 
         game_status = 'gaming'
         print(go_first_button.disabled, go_second_button.disabled)
@@ -122,6 +133,7 @@ while True:
                                 time.sleep(1)
 
                                 col_AI = AI_player.choose_column(connect_four_game)
+
                                 drop_piece(connect_four_game, col_AI)
                                 draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
 

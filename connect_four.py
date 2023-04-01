@@ -149,11 +149,11 @@ class ConnectFour:
 
     def copy_and_record_player_move(self, move_column: int) -> ConnectFour:
         """ Return a copy of this game state with the given move recorded."""
-        new_game = self._copy()
+        new_game = self.copy()
         new_game.record_player_move(move_column)
         return new_game
 
-    def _copy(self) -> ConnectFour:
+    def copy(self) -> ConnectFour:
         """ Return a copy of this game state."""
         new_game = ConnectFour()
         new_game.grid = [[self.grid[y][x] for x in range(GRID_WIDTH)] for y in range(GRID_HEIGHT)]
