@@ -21,8 +21,6 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 from __future__ import annotations
 import pygame
 from connect_four import ConnectFour
-# from main import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-#     BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO
 
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT, COLUMN_COUNT = 6, 7
@@ -35,14 +33,11 @@ pygame.init()
 BUTTOM_COLUMN_WIDTH = ...
 COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
 BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
-BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE * 0.7, SQUARESIZE * 0.7
-DISABLE_COLOR = (100, 100, 100)  # Grey
-BUTTON_COLOR = COLOR_PLAYER_ONE  # todo: decide the color later
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE , SQUARESIZE
+DISABLE_COLOR = (192, 192, 192)  # Grey
+BUTTON_COLOR = BLUE  # todo: decide the color later
 pygame.init()
 FONT = pygame.font.Font(None, 15)
-
-# todo: I NEED a FONT that can be used
-
 
 
 class Button():
@@ -57,20 +52,20 @@ class Button():
         self.center = (x, y)
         self.word = word
         self.clicked = False
-
     def draw(self, window: pygame.Surface) -> None:
-        """Draw the button with words on it on the given window. """
+        """Draw the button with words on it on the given window.
+        It doesn't update screen in this function"""
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
         pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
         # draw word
-        text = FONT.render(self.word, True, BLACK)  # todo: change the font
+        text = FONT.render(self.word, True, WHITE)  # todo: change the font
         w, h = text.get_size()
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
         window.blit(text, (text_x, text_y))
-        pygame.display.update()
+        # pygame.display.update()
 
     def disabled(self, window: pygame.Surface) -> None:
         """Make the button to a grey color
@@ -89,7 +84,7 @@ class Button():
         window.blit(text, (text_x, text_y))
         pygame.display.update()
 
-    def is_valid(self, position: tuple[int]) -> bool:
+    def is_valid(self, position: tuple[int, int], window: pygame.Surface) -> bool:
         """Return if the given position is on the position of the button
         Precondition:
             - 0 <= position[0] <= WINDOW_WIDTH
@@ -99,6 +94,7 @@ class Button():
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
             self.clicked = True
+            self.disabled(window)
             # todo：做一个按下去的动画
             return True
         else:
@@ -129,7 +125,7 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
         y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
     """
     window.fill(WHITE)
-    pygame.display.flip()
+    # pygame.display.flip()
     grid = game.grid
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
