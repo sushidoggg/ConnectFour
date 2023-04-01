@@ -41,17 +41,19 @@ FONT = pygame.font.Font(None, 15)
 
 
 class Button():
-    """A class represents a circle buttons."""
+    """A class represents a circle buttons.
+    disabled: show that if the button should be disactivated, this attribute """
     word: str
     center: tuple[int, int]
-    clicked: bool
+    disabled: bool
     def __init__(self, x: int, y: int, word: str) -> None:
         """Create a rectangular button of given image at (x, y)
         x, y are the topleft location of the button on a screen.
         image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT in the same ratio"""
         self.center = (x, y)
         self.word = word
-        self.clicked = False
+        self.disabled = False
+
     def draw(self, window: pygame.Surface) -> None:
         """Draw the button with words on it on the given window.
         It doesn't update screen in this function"""
@@ -59,19 +61,20 @@ class Button():
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
         pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
-        pygame.draw.rect(window, (0, 0, 0), (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 3)
+        darker = (int(BUTTON_COLOR[0] * 0.7), int(BUTTON_COLOR[1] * 0.7), int(BUTTON_COLOR[2] * 0.7))
+        pygame.draw.rect(window, darker, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 3)
         # draw word
-        text = FONT.render(self.word, True, WHITE)  # todo: change the font
+        text = FONT.render(self.word, True, WHITE)
         w, h = text.get_size()
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
         window.blit(text, (text_x, text_y))
         # pygame.display.update()
 
-    def disabled(self, window: pygame.Surface) -> None:
+    def show_disabled(self, window: pygame.Surface) -> None:
         """Make the button to a grey color
         Representation Invariants:
-            - self.clicked is False
+            - self.disabled is True
         """
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
@@ -87,6 +90,7 @@ class Button():
 
     def is_valid(self, position: tuple[int, int], window: pygame.Surface) -> bool:
         """Return if the given position is on the position of the button
+        Doesn't mutate self.disabled
         Precondition:
             - 0 <= position[0] <= WINDOW_WIDTH
             - 0 <= position[1] <= WINDOW_HEIGHT
@@ -94,9 +98,10 @@ class Button():
         left, right = int(self.center[0] - BUTTON_WIDTH / 2), int(self.center[0] + BUTTON_WIDTH / 2)
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
-            self.clicked = True
-            self.disabled(window)
-            # todo：做一个按下去的动画
+            self.show_disabled(window)
+            # todo：go back to it
+            self.draw(window)
+            pygame.display.update()
             return True
         else:
             return False
