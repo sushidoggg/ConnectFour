@@ -15,16 +15,18 @@ This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Jo
 """
 from __future__ import annotations
 import pygame
+from pygame import gfxdraw
 import time
 from connect_four import ConnectFour
 
+AI_RESPONSE_TIME = 50
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT, COLUMN_COUNT = 6, 7
 SQUARESIZE = 70
 RADIUS = int(SQUARESIZE / 3.5)
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
 SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
-BORDER_RADIUS = int(SQUARESIZE / 4)
+BORDER_RADIUS = int(SQUARESIZE / 3.5)
 pygame.init()
 BUTTOM_COLUMN_WIDTH = ...
 COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
@@ -32,7 +34,6 @@ BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
 BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5) , int(SQUARESIZE * 0.7)
 DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE
-pygame.init()
 
 FONT_WORDS = pygame.font.SysFont("Courier", int(SQUARESIZE/3))
 FONT_WIN_STATUS = pygame.font.SysFont("Courier", int(SQUARESIZE/1.5))
@@ -64,16 +65,19 @@ class Button():
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
-        pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), border_radius=BORDER_RADIUS)
+        # draw the outer Rect
         darker = (int(BUTTON_COLOR[0] * 0.7), int(BUTTON_COLOR[1] * 0.7), int(BUTTON_COLOR[2] * 0.7))
-        pygame.draw.rect(window, darker, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 4, border_radius=BORDER_RADIUS)
+        draw_rounded_rect(window, pygame.Rect(topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), darker, \
+                          BORDER_RADIUS)
+        # draw the inner Rect
+        draw_rounded_rect(window, pygame.Rect(topleft_x + int(BUTTON_WIDTH * 0.05), topleft_y + int(BUTTON_WIDTH * 0.05), \
+                          int(BUTTON_WIDTH * 0.9), int(0.85 * BUTTON_HEIGHT)), BUTTON_COLOR, int(BORDER_RADIUS * 0.8))
         # draw word
         text = FONT_BUTTON.render(self.word, True, WHITE)
         w, h = text.get_size()
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
         window.blit(text, (text_x, text_y))
-        # pygame.display.update()
 
     def show_disabled(self, window: pygame.Surface) -> None:
         """Make the button to a grey color
@@ -114,6 +118,34 @@ class Button():
         """Change self.disabled to the given boolean value"""
         self.disabled = value
 
+def draw_rounded_rect(surface: pygame.Surface, rect: pygame.Rect, color: tuple[int, int, int], corner_radius: int) -> None:
+    ''' Draw an anti-aliased rectangle with rounded corners. We draw anti-aliased circles at the corners
+    Would prefer this:
+        pygame.draw.rect(surface, color, rect, border_radius=corner_radius)
+    '''
+    # draw four anti aliasing circles to smooth the corners
+    # top left
+    pygame.gfxdraw.aacircle(surface, rect.left + corner_radius, rect.top + corner_radius, corner_radius, color)
+    pygame.gfxdraw.filled_circle(surface, rect.left + corner_radius, rect.top + corner_radius, corner_radius, color)
+    # top right
+    pygame.gfxdraw.aacircle(surface, rect.right - corner_radius - 1, rect.top + corner_radius, corner_radius, color)
+    pygame.gfxdraw.filled_circle(surface, rect.right - corner_radius - 1, rect.top + corner_radius, corner_radius, color)
+    # bottom left
+    pygame.gfxdraw.aacircle(surface, rect.left + corner_radius, rect.bottom - corner_radius - 1, corner_radius, color)
+    pygame.gfxdraw.filled_circle(surface, rect.left + corner_radius, rect.bottom - corner_radius - 1, corner_radius, color)
+    # bottom right
+    pygame.gfxdraw.aacircle(surface, rect.right - corner_radius - 1, rect.bottom - corner_radius - 1, corner_radius, color)
+    pygame.gfxdraw.filled_circle(surface, rect.right - corner_radius - 1, rect.bottom - corner_radius - 1, corner_radius, color)
+
+    rect_tmp = pygame.Rect(rect)
+    rect_tmp.width -= 2 * corner_radius
+    rect_tmp.center = rect.center
+    pygame.draw.rect(surface, color, rect_tmp)
+    rect_tmp.width = rect.width
+    rect_tmp.height -= 2 * corner_radius
+    rect_tmp.center = rect.center
+    pygame.draw.rect(surface, color, rect_tmp)
+
 def draw_hint_disc(window: pygame.Surface, col: int, game: ConnectFour):
     # draw_one_dics and flipped
     x = int(SQUARESIZE * (1 + col) + SQUARESIZE / 2)
@@ -133,10 +165,15 @@ def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: t
         Preconditions:
             - 0 <= center[0] <= WINDOW_WIDTH and 0 <= center[1] <= WINDOW_HEIGHT
     """
-    pygame.draw.circle(window, color, (center[0], center[1]), RADIUS)
-    # create a darker color and draw the outer circle of the disc
     darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
-    pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
+    pygame.gfxdraw.aacircle(window, center[0], center[1], RADIUS, darker)
+    pygame.gfxdraw.filled_circle(window, center[0], center[1], RADIUS, darker)
+    # pygame.draw.circle(window, color, (center[0], center[1]), RADIUS)
+    pygame.gfxdraw.aacircle(window, center[0], center[1], int(RADIUS * 4 / 5), color)
+    pygame.gfxdraw.filled_circle(window, center[0], center[1], int(RADIUS * 4 / 5), color)
+    # create a darker color and draw the outer circle of the disc
+
+    # pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]) -> None:
@@ -160,8 +197,10 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
                 pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_bottom_right_radius=BORDER_RADIUS)
             else:
                 pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            pygame.draw.circle(window, WHITE, (
-                int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
+            #pygame.draw.circle(window, WHITE, (
+            #    int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
+            pygame.gfxdraw.aacircle(window, int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2), RADIUS, WHITE)
+            pygame.gfxdraw.filled_circle(window, int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2), RADIUS, WHITE)
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
             if grid[ROW_COUNT - 1 - r][c] == PLAYER_TWO:  # Player Two's disc
@@ -234,10 +273,12 @@ if __name__ == '__main__':
     window.fill((0,0,0))
     pygame.display.set_caption("Connect Four")
     pygame.display.flip()
-    b1 = Button(100, 100, "Heelo")
-    b1.draw(window)
-    pygame.display.update()
+    # b1 = Button(100, 100, "Heelo")
+    # b1.draw(window)
 
+
+    draw_rounded_rect(window, pygame.Rect(100, 100, 50, 60), BLUE, 10)
+    pygame.display.update()
     # main while loop
     while True:
         for event in pygame.event.get():
