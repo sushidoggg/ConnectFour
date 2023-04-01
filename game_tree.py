@@ -95,7 +95,7 @@ class GameTree:
         Preconditions:
             - depth >= 0
         """
-        if self.get_next_player() == PLAYER_ONE:
+        if self.current_player == PLAYER_ONE:
             turn_desc = "Player One"
         else:
             turn_desc = "Player Two"
@@ -132,7 +132,7 @@ class GameTree:
     def _update_score(self) -> None:
         """ Update the score for each new move.
         """
-        if len(self) == 1:
+        if len(self._subtrees) == 0:
             # Do nothing when self is a leaf node
             return None
 

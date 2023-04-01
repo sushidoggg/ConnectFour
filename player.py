@@ -55,6 +55,7 @@ class Player:
 class RandomPlayer(Player):
     """ A player that performs randomly by selecting one of the possible moves at random.
     """
+
     def choose_column(self, game: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
@@ -145,7 +146,7 @@ def score_last_move(game_state: ConnectFour) -> float:
         player, move_position = last_move
 
     attacking_score = _score_move_by_player(game_state, move_position, player)
-    defending_score = _score_move_by_player(game_state, move_position, game_state.get_opposite_player())
+    defending_score = _score_move_by_player(game_state, move_position, game_state.get_current_player())
     score = attacking_score + defending_score
 
     if score > 1.0:
@@ -167,8 +168,10 @@ def _score_move_by_player(game_state: ConnectFour, move_position: tuple[int, int
     score = 0.0
     if 3 in connected_counts:
         score += 0.3 * connected_counts[3]
-    elif 2 in connected_counts:
+    if 2 in connected_counts:
         score += 0.1 * connected_counts[2]
+    if 1 in connected_counts:
+        score += 0.05
     return score
 
 
@@ -181,26 +184,23 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
     - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
     # TODO: some more preconditions?
     """
-    if root_move == GAME_START_MOVE:
-        player = None
-    else:
-        player = game_state.get_current_player()
+    current_player = game_state.get_opposite_player()
 
     if game_state.get_winner() is not None:
         # A winner already exists
-        if game_state.get_winner() == player:
-            return GameTree(root_move, initial_player, player, score=1.0)
+        if game_state.get_winner() == current_player:
+            return GameTree(root_move, initial_player, current_player, score=1.0)
         else:
             # Shouldn't reach this branch
-            return GameTree(root_move, initial_player, player, score=-1.0)
+            return GameTree(root_move, initial_player, current_player, score=-1.0)
 
     elif d == 0:
         # Reaches maximum search depth
         score = score_last_move(game_state)
-        return GameTree(root_move, initial_player, player, score=score)
+        return GameTree(root_move, initial_player, current_player, score=score)
 
     else:
-        game_tree = GameTree(root_move, initial_player, player, score=0.0)
+        game_tree = GameTree(root_move, initial_player, current_player, score=0.0)
 
         possible_columns = game_state.get_possible_columns()
         for column in possible_columns:
@@ -236,6 +236,108 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
             update_complete_tree_to_depth(subtree, new_game_state, d - 1, initial_player)
 
 
+#######
+# 以下是alysa player和她的一堆东西
+#######
+class AlysaAIPlayer(Player):
+    def __init__(self, player_num: int, search_depth: int, game_tree: Optional[GameTree]) -> None:
+        Player.__init__(self, player_num)
+
+        if game_tree is not None:
+            self._game_tree = game_tree
+        else:
+            self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, ConnectFour(), search_depth,
+                                                              self.player_num)
+
+        self._depth = search_depth
+
+    def choose_column(self, game: ConnectFour) -> int:
+        print('jinlaile')
+        return pick_best_col_alysa_AI(game, self)
+
+
+def evaluate_window_alysa_AI(window: list[int], player) -> int:
+    print('hahahah')
+    score = 0
+    opponent_num = PLAYER_ONE
+    if player.player_num == PLAYER_ONE:
+        opponent_num = PLAYER_TWO
+
+    if window.count(player.player_num) == 4:
+        score += 100
+    elif window.count(player.player_num) == 3 and window.count(UNOCCUPIED) == 1:
+        score += 10
+    elif window.count(player.player_num == 2) and window.count(UNOCCUPIED) == 2:
+        score += 5
+
+    if window.count(opponent_num) == 3 and window.count(UNOCCUPIED) == 1:
+        score -= 80
+
+    return score
+
+
+def score_position_for_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
+    """
+    piece = 0 if PLAYER_ONE, piece = 1 if PLAYER_TWO
+    """
+    # Score horizontal
+    print('aba')
+    score = 0
+
+    ## score center column
+    center_array = [row[GRID_WIDTH // 2] for row in connect_four.grid]
+    center_count = center_array.count(player.player_num)
+    score += 6 * center_count
+
+    for r in range(GRID_HEIGHT):
+        row_array = [i for i in list(connect_four.grid[r])]
+        for c in range(GRID_WIDTH - 3):
+            window = row_array[c: c + 4]
+            score += evaluate_window_alysa_AI(window, player)
+            print('2')
+            print(c)
+    # score vertical
+    for c in range(GRID_WIDTH):
+        col_array = [row[c] for row in connect_four.grid]
+        for r in range(GRID_HEIGHT - 3):
+            window = col_array[r: r + 4]
+            score += evaluate_window_alysa_AI(window, player)
+            print('3')
+    # score positive sloped diagonal
+    for r in range(GRID_HEIGHT - 3):
+        for c in range(GRID_WIDTH - 3):
+            window = [connect_four.grid[r + i][c + i] for i in range(4)]
+            score += evaluate_window_alysa_AI(window, player)
+
+    # score negative sloped diagonal
+    for r in range(GRID_HEIGHT - 3):
+        for c in range(GRID_WIDTH - 3):
+            window = [connect_four.grid[r + 3 - i][c + i] for i in range(4)]
+            score += evaluate_window_alysa_AI(window, player)
+
+    return score
+
+
+def pick_best_col_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
+    print('5')
+    best_score = -10000
+
+    valid_columns = connect_four.get_possible_columns()
+    best_col = random.choice(valid_columns)
+
+    for col in valid_columns:
+        # position = connect_four.get_move_position_by_column(col)
+        # row = position[0]
+        copy_connect_four = connect_four.copy()
+        copy_connect_four.record_player_move(col)
+        score = score_position_for_alysa_AI(copy_connect_four, player)
+        if score > best_score:
+            best_score = score
+            best_col = col
+
+    return best_col
+
+'''
 if __name__ == '__main__':
     connect_four = ConnectFour()
 
@@ -264,3 +366,4 @@ if __name__ == '__main__':
         print(first_player + ' wins!')
     else:
         print(second_player + ' wins!')
+'''
