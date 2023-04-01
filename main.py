@@ -81,7 +81,7 @@ draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_bu
 
 
 while True:
-    print(game_status)
+    # print(game_status)
 
     if game_status == 'before_game':
         print('restarted')
@@ -109,10 +109,10 @@ while True:
         # pygame.draw.rect(screen, WHITE, (SQUARESIZE, SQUARESIZE, 7 * SQUARESIZE, SQUARESIZE))
         if go_first_button.clicked:
             user_go_first = True
-            AI_player = AIPlayer(PLAYER_TWO, None, 2)
+            AI_player = AIPlayer(PLAYER_TWO, 4, None)
         else:
             user_go_first = False
-            AI_player = AIPlayer(PLAYER_ONE, None, 2)
+            AI_player = AIPlayer(PLAYER_ONE, 4, None)
 
         game_status = 'gaming'
     elif game_status == 'gaming':

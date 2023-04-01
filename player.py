@@ -145,7 +145,7 @@ def score_last_move(game_state: ConnectFour) -> float:
         player, move_position = last_move
 
     attacking_score = _score_move_by_player(game_state, move_position, player)
-    defending_score = _score_move_by_player(game_state, move_position, game_state.get_opposite_player())
+    defending_score = _score_move_by_player(game_state, move_position, game_state.get_current_player())
     score = attacking_score + defending_score
 
     if score > 1.0:
@@ -167,8 +167,10 @@ def _score_move_by_player(game_state: ConnectFour, move_position: tuple[int, int
     score = 0.0
     if 3 in connected_counts:
         score += 0.3 * connected_counts[3]
-    elif 2 in connected_counts:
+    if 2 in connected_counts:
         score += 0.1 * connected_counts[2]
+    if 1 in connected_counts:
+        score += 0.05
     return score
 
 
@@ -181,26 +183,23 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
     - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
     # TODO: some more preconditions?
     """
-    if root_move == GAME_START_MOVE:
-        player = None
-    else:
-        player = game_state.get_current_player()
+    current_player = game_state.get_opposite_player()
 
     if game_state.get_winner() is not None:
         # A winner already exists
-        if game_state.get_winner() == player:
-            return GameTree(root_move, initial_player, player, score=1.0)
+        if game_state.get_winner() == current_player:
+            return GameTree(root_move, initial_player, current_player, score=1.0)
         else:
             # Shouldn't reach this branch
-            return GameTree(root_move, initial_player, player, score=-1.0)
+            return GameTree(root_move, initial_player, current_player, score=-1.0)
 
     elif d == 0:
         # Reaches maximum search depth
         score = score_last_move(game_state)
-        return GameTree(root_move, initial_player, player, score=score)
+        return GameTree(root_move, initial_player, current_player, score=score)
 
     else:
-        game_tree = GameTree(root_move, initial_player, player, score=0.0)
+        game_tree = GameTree(root_move, initial_player, current_player, score=0.0)
 
         possible_columns = game_state.get_possible_columns()
         for column in possible_columns:
@@ -236,6 +235,7 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
             update_complete_tree_to_depth(subtree, new_game_state, d - 1, initial_player)
 
 
+'''
 if __name__ == '__main__':
     connect_four = ConnectFour()
 
@@ -264,3 +264,4 @@ if __name__ == '__main__':
         print(first_player + ' wins!')
     else:
         print(second_player + ' wins!')
+'''
