@@ -92,7 +92,7 @@ class Button():
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
             self.clicked = True
-            # todo：做一个按下去的动画
+            self.disabled(window)
             return True
         else:
             return False
