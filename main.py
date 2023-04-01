@@ -1,20 +1,15 @@
 """CSC111 Winter 2023 Project: Connect 4 (Main)
-
 Module Description
 ==================
-
 This module contains the codes and functions that are necessary to run the entire program from start to finish.
 By reading the *docstring* of this file, you can gain insights into the
 role and functionality of these codes and functions as well as how they contribute to this project as a whole.
-
 Copyright and Usage Information
 ===============================
-
 This file is provided solely for the personal and private use of the
 Teaching Stream of CSC111 at the University of Toronto St. George campus.
 All forms of distribution of this code, whether as given or with any changes, are
 expressly prohibited.
-
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
