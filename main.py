@@ -26,7 +26,7 @@ from connect_four import ConnectFour
 pygame.init()  # pygame needs to be initialized before defining FONT
 
 from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BOTTON, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS
+    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BUTTON, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS, UNOCCUPIED
 
 
 connect_four_game = ConnectFour()
@@ -73,19 +73,18 @@ while True:
 
         if go_first_button.is_valid(position, screen):
             user_go_first = True
-            AI_player = RandomPlayer(2)
-            # AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
+            # AI_player = RandomPlayer(2)
+            AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
             # AI_player = AIPlayer(PLAYER_TWO, 5, None)
         else:
             user_go_first = False
             # AI_player = AIPlayer(PLAYER_ONE, 5, None)
-            # AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
-            AI_player = RandomPlayer(2)
+            AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
+            # AI_player = RandomPlayer(2)
         go_second_button.disabled, go_first_button.disabled = True, True
         go_second_button.show_disabled(screen)
         go_first_button.show_disabled(screen)
         pygame.display.update()
-
 
         game_status = 'gaming'
     elif game_status == 'gaming':
@@ -178,9 +177,11 @@ while True:
     elif game_status == 'game_over':
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
-            print_win(screen, 'You')
+            print_win(screen, 'You Win!')
+        elif connect_four_game.get_winner() == UNOCCUPIED:
+            print_win(screen, 'TIE!')
         else:
-            print_win(screen, 'AI')
+            print_win(screen, 'AI Win!')
 
             # label = FONT_WORDS.render("AI wins!", True, BLACK)
             # screen.blit(label, (SQUARESIZE, 10))
