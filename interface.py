@@ -33,8 +33,10 @@ BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5) , int(SQUARESIZE * 0.7)
 DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE
 pygame.init()
+
+FONT_WORDS = pygame.font.SysFont("comicsansms", 22)
 FONT_SIZE = int(SQUARESIZE / 2.5)
-FONT = pygame.font.Font(None, FONT_SIZE)
+FONT_BOTTON = pygame.font.Font(None, FONT_SIZE)
 
 
 class Button():
