@@ -20,8 +20,11 @@ Additionally, this file references a2_game_tree.py from CSC111 Assignment 2,
 which is also Copyright (c) 2023 Mario Badr, David Liu, and Isaac Waller.
 """
 from __future__ import annotations
+
+import math
 from typing import Optional
 from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
+from player import score_position_for_alysa_AI, Player
 
 GAME_START_MOVE = "*"
 
@@ -155,3 +158,30 @@ class GameTree:
         else:
             subtrees = self.get_subtrees()
             return sum(subtree.score for subtree in subtrees) / len(self._subtrees)
+
+    def minimax(self, game: ConnectFour, depth: int, player_number: int, maxPlayer: bool) -> int:
+        opponent_num = PLAYER_ONE
+        if player_number == PLAYER_ONE:
+            opponent_num = PLAYER_TWO
+        if depth == 0 or self.get_subtrees() == []:
+            if game.get_winner() is not None:
+                if game.get_winner() == player_number:
+                    return 10000
+                elif game.get_winner() == opponent_num:
+                    return -10000
+                else: # No more valid moves
+                    return 0
+            else:
+                return score_position_for_alysa_AI(game, player_number)
+        if maxPlayer:
+            value = int(-math.inf)
+            for subtree in self.get_subtrees():
+                copy_game = game.copy_and_record_player_move(subtree.move_column)
+                new_score = max(value, subtree.minimax(copy_game, depth - 1, player_number, False))
+                return new_score
+        else:
+            value = int(math.inf)
+            for subtree in self.get_subtrees():
+                copy_game = game.copy_and_record_player_move(subtree.move_column)
+                new_score = min(value, subtree.minimax(copy_game, depth - 1, opponent_num, True))
+                return new_score
