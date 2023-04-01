@@ -1,25 +1,21 @@
 """CSC111 Winter 2023 Project: Connect 4 (Interface)
-
 Module Description
 ==================
-
 This module contains a collection of Python classes and functions that represent the interface of Connect 4,
 which is mainly implemented using the Pygame modules.
 By reading the *docstring* of this file, you can gain insights into the
 role and functionality of these classes and functions as well as how they contribute to this project as a whole.
-
 Copyright and Usage Information
 ===============================
-
 This file is provided solely for the personal and private use of the
 Teaching Stream of CSC111 at the University of Toronto St. George campus.
 All forms of distribution of this code, whether as given or with any changes, are
 expressly prohibited.
-
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
 import pygame
+import time
 from connect_four import ConnectFour
 
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
@@ -42,7 +38,11 @@ FONT = pygame.font.Font(None, 15)
 
 class Button():
     """A class represents a circle buttons.
-    disabled: show that if the button should be disactivated, this attribute """
+    Instance Attributes:
+        - disabled: show that if the button should be disactivated, this attribute needs to be changed manually
+        - word: the word that is printed on the button
+        - center: a tuple of integers that is the center location of the button
+    """
     word: str
     center: tuple[int, int]
     disabled: bool
@@ -73,6 +73,7 @@ class Button():
 
     def show_disabled(self, window: pygame.Surface) -> None:
         """Make the button to a grey color
+        It doesn't update screen in this function
         Representation Invariants:
             - self.disabled is True
         """
@@ -86,7 +87,6 @@ class Button():
         text_x = int(self.center[0] - w / 2)
         text_y = int(self.center[1] - h / 2)
         window.blit(text, (text_x, text_y))
-        pygame.display.update()
 
     def is_valid(self, position: tuple[int, int], window: pygame.Surface) -> bool:
         """Return if the given position is on the position of the button
@@ -99,16 +99,17 @@ class Button():
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
             self.show_disabled(window)
-            # todo：go back to it
+            pygame.display.update()
+            time.sleep(0.5)
             self.draw(window)
             pygame.display.update()
             return True
         else:
             return False
 
-    def reset_click(self, value: bool) -> None:
-        """Change self.clicked to the given boolean value"""
-        self.clicked = value
+    def reset_disabled(self, value: bool) -> None:
+        """Change self.disabled to the given boolean value"""
+        self.disabled = value
 
 
 def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
@@ -121,7 +122,7 @@ def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: 
     # create a darker color and draw the outer circle of the disc
     darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
     pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
-    pygame.display.update()
+    # pygame.display.update()
 
 
 
@@ -132,7 +133,6 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
         y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
     """
     window.fill(WHITE)
-    # pygame.display.flip()
     grid = game.grid
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
@@ -149,7 +149,10 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
                 _draw_one_disc(window, COLOR_PLAYER_ONE, center)
     # draw the buttons:
     for button in buttons:
-        button.draw(window)
+        if button.disabled is True:
+            button.show_disabled(window)
+        else:
+            button.draw(window)
     pygame.display.update()
 
 
