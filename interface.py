@@ -59,6 +59,7 @@ class Button():
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
         pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        pygame.draw.rect(window, (0, 0, 0), (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 3)
         # draw word
         text = FONT.render(self.word, True, WHITE)  # todo: change the font
         w, h = text.get_size()
@@ -116,6 +117,7 @@ def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: 
     darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
     pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
     pygame.display.update()
+
 
 
 def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]) -> None:
