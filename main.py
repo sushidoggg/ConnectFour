@@ -31,7 +31,7 @@ from connect_four import ConnectFour
 pygame.init()  # pygame needs to be initialized before defining FONT
 
 from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO, SIZE
+    BLACK, ROW_COUNT, COLUMN_COUNT, FONT, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS
 
 
 connect_four_game = ConnectFour()
@@ -55,7 +55,6 @@ go_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
 go_second_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
 draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
 
-font = pygame.font.SysFont("comicsansms", 22)
 while True:
     # print(game_status)
 
@@ -67,7 +66,7 @@ while True:
         restart_button.reset_click(False)
 
         draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-        label_choose_order = font.render("Choose if you want to go first or last!", True, BLACK)
+        label_choose_order = FONT_WORDS.render("Choose if you want to go first or last!", True, BLACK)
         screen.blit(label_choose_order, (SQUARESIZE, SQUARESIZE))
         pygame.display.update()
 
@@ -133,7 +132,7 @@ while True:
                                     game_status = 'game_over'
                                     break
                             else:
-                                label_not_valid = font.render("Choose another column!", True, BLACK)
+                                label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
@@ -170,7 +169,7 @@ while True:
 
                             else:
                                 print("NOT VALID")
-                                label_not_valid = font.render("Choose another column!", True, BLACK)
+                                label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
@@ -180,12 +179,31 @@ while True:
     elif game_status == 'game_over':
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
-            label = font.render("You win!", True, BLACK)
-            screen.blit(label, (SQUARESIZE, 10))
+
+            rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, 245, 550, 60), 2)
+            # screen.fill((127, 255, 212), rec)
+            screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1]*1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
+
+            font2 = pygame.font.SysFont("Times", 50)
+            text = font2.render("You win!", True, BLACK)
+            text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2))
+            screen.blit(text, text_rect)
+
+            # label = font.render("You win!", True, BLACK)
+            # screen.blit(label, (SQUARESIZE, 10))
 
         else:
-            label = font.render("AI wins!", True, BLACK)
-            screen.blit(label, (SQUARESIZE, 10))
+            rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, 245, 550, 60), 2)
+            # screen.fill((127, 255, 212), rec)
+            screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1] * 1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
+
+            font2 = pygame.font.SysFont("Times", 50)
+            text = font2.render("AI wins!", True, BLACK)
+            text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2))
+            screen.blit(text, text_rect)
+
+            # label = FONT_WORDS.render("AI wins!", True, BLACK)
+            # screen.blit(label, (SQUARESIZE, 10))
 
         pygame.display.update()
         time.sleep(1)

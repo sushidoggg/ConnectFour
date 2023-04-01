@@ -38,6 +38,7 @@ DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE  # todo: decide the color later
 pygame.init()
 FONT = pygame.font.Font(None, 15)
+FONT_WORDS = pygame.font.SysFont("comicsansms", 22)
 
 
 class Button():
