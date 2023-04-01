@@ -40,15 +40,13 @@ connect_four_game = ConnectFour()
 screen = pygame.display.set_mode(SIZE)
 pygame.display.flip()
 
-pygame.display.update()
-
 user_go_first = None
 AI_player = None
 
 game_status = 'before_game'
 
 
-# create HINT button todo: try to draw all buttons here
+# create all the button
 hint_button = Button(x=10 * SQUARESIZE, y=6 * SQUARESIZE, word='HINT')
 restart_button = Button(x=10 * SQUARESIZE, y=8 * SQUARESIZE, word='RESTART')
 go_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
@@ -98,14 +96,14 @@ while True:
 
             if event.type == pygame.MOUSEMOTION:
                 pygame.draw.rect(screen, WHITE, (0.5 * SQUARESIZE, SQUARESIZE, 8.5 * SQUARESIZE, SQUARESIZE))
-                pygame.display.update()
                 posx, posy = event.pos[0], event.pos[1]
                 if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE and user_go_first:  # posx, posy in the region for selection and player is user :
                     pygame.draw.circle(screen, COLOR_PLAYER_ONE, (posx, int(SQUARESIZE / 2 + SQUARESIZE)), RADIUS)  # Olivia 改一下颜色
                 elif SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE and not user_go_first:
                     pygame.draw.circle(screen, COLOR_PLAYER_TWO, (posx, int(SQUARESIZE / 2 + SQUARESIZE)), RADIUS)
                 pygame.display.update()
-            pygame.display.update()
+
+            # pygame.display.update()
 
             if user_go_first:
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -135,6 +133,7 @@ while True:
                             else:
                                 label_not_valid = FONT.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
+                                pygame.display.update()
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
                     elif restart_button.is_valid(event.pos, screen):
