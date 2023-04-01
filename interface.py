@@ -27,9 +27,108 @@ def draw_one_disc(window: pygame.Surface, color: tuple[int], center: tuple[int])
     '''Draw a beautiful disc on window at the given window with given color'''
     ...
 
+<<<<<<< Updated upstream
 def draw_window(window: pygame.Surface, game: ConnectFour) -> None:
     '''Based on the given sqaure size, draw the whole interface on the given window at the current status of game
         If game.grid are all unoccupied, then just draw the window'''
+=======
+pygame.init()
+BUTTOM_COLUMN_WIDTH = ...
+COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
+BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
+BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE , SQUARESIZE
+DISABLE_COLOR = (192, 192, 192)  # Grey
+BUTTON_COLOR = BLUE  # todo: decide the color later
+pygame.init()
+FONT = pygame.font.Font(None, 15)
+
+
+class Button():
+    """A class represents a circle buttons."""
+    word: str
+    center: tuple[int, int]
+    clicked: bool
+    def __init__(self, x: int, y: int, word: str) -> None:
+        """Create a rectangular button of given image at (x, y)
+        x, y are the topleft location of the button on a screen.
+        image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT in the same ratio"""
+        self.center = (x, y)
+        self.word = word
+        self.clicked = False
+    def draw(self, window: pygame.Surface) -> None:
+        """Draw the button with words on it on the given window.
+        It doesn't update screen in this function"""
+        # draw a rectangle
+        topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
+        topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
+        pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        pygame.draw.rect(window, (0, 0, 0), (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 3)
+        # draw word
+        text = FONT.render(self.word, True, WHITE)  # todo: change the font
+        w, h = text.get_size()
+        text_x = int(self.center[0] - w / 2)
+        text_y = int(self.center[1] - h / 2)
+        window.blit(text, (text_x, text_y))
+        # pygame.display.update()
+
+    def disabled(self, window: pygame.Surface) -> None:
+        """Make the button to a grey color
+        Representation Invariants:
+            - self.clicked is False
+        """
+        # draw a rectangle
+        topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
+        topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
+        pygame.draw.rect(window, DISABLE_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        # draw word
+        text = FONT.render(self.word, True, BLACK)
+        w, h = text.get_size()
+        text_x = int(self.center[0] - w / 2)
+        text_y = int(self.center[1] - h / 2)
+        window.blit(text, (text_x, text_y))
+        pygame.display.update()
+
+    def is_valid(self, position: tuple[int, int], window: pygame.Surface) -> bool:
+        """Return if the given position is on the position of the button
+        Precondition:
+            - 0 <= position[0] <= WINDOW_WIDTH
+            - 0 <= position[1] <= WINDOW_HEIGHT
+        """
+        left, right = int(self.center[0] - BUTTON_WIDTH / 2), int(self.center[0] + BUTTON_WIDTH / 2)
+        up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
+        if left <= position[0] <= right and up <= position[1] <= down:
+            self.clicked = True
+            self.disabled(window)
+            # todo：做一个按下去的动画
+            return True
+        else:
+            return False
+
+    def reset_click(self, value: bool) -> None:
+        """Change self.clicked to the given boolean value"""
+        self.clicked = value
+
+
+def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
+    """Draw a beautiful disc on window at the given window with given color
+        The disc has two layers, color is its inner/base color; a darker color is its outer color
+        Preconditions:
+            - 0 <= center[0] <= WINDOW_WIDTH and 0 <= center[1] <= WINDOW_HEIGHT
+    """
+    pygame.draw.circle(window, color, (center[0], center[1]), RADIUS)
+    # create a darker color and draw the outer circle of the disc
+    darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
+    pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
+    pygame.display.update()
+
+
+def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]) -> None:
+    """ Based on the given sqaure size, draw the whole interface on the given window at the current status of game
+        If game.grid are all unoccupied, then just draw the window.
+        game.grid record the bottom row first, top row last. Wherease on pygame, the location of top row has smallest
+        y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
+    """
+>>>>>>> Stashed changes
     window.fill(WHITE)
     pygame.display.flip()
     grid = game.grid
