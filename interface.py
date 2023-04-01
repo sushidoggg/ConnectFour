@@ -34,8 +34,8 @@ DISABLE_COLOR = (192, 192, 192)  # Grey
 BUTTON_COLOR = BLUE
 pygame.init()
 
-FONT_WORDS = pygame.font.SysFont("comicsansms", int(SQUARESIZE/2.5))
-FONT_WIN_STATUS = pygame.font.SysFont("Times", int(SQUARESIZE/1.5))
+FONT_WORDS = pygame.font.SysFont("Courier", int(SQUARESIZE/3))
+FONT_WIN_STATUS = pygame.font.SysFont("Courier", int(SQUARESIZE/1.5))
 FONT_SIZE = int(SQUARESIZE / 2.5)
 FONT_BOTTON = pygame.font.Font(None, FONT_SIZE)
 
@@ -169,8 +169,8 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
     # draw player one and its button and player two and its button
     draw_one_disc(window, COLOR_PLAYER_ONE, (SQUARESIZE * 3, (2 + COLUMN_COUNT) * SQUARESIZE))
     draw_one_disc(window, COLOR_PLAYER_TWO, (SQUARESIZE * 6, (2 + COLUMN_COUNT) * SQUARESIZE))
-    text1 = FONT_BOTTON.render('player one', True, BLACK)
-    text2 = FONT_BOTTON.render('player two', True, BLACK)
+    text1 = FONT_WORDS.render('player one', True, BLACK)
+    text2 = FONT_WORDS.render('player two', True, BLACK)
     window.blit(text1, (int(SQUARESIZE * 3 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     pygame.display.update()
