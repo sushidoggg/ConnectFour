@@ -51,13 +51,12 @@ draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_bu
 
 while True:
     # print(game_status)
-
     if game_status == 'before_game':
         print('restarted')
         connect_four_game = ConnectFour()
-        go_first_button.reset_click(False)
-        go_second_button.reset_click(False)
-        restart_button.reset_click(False)
+        go_first_button.reset_disabled(False)
+        go_second_button.reset_disabled(False)
+        restart_button.reset_disabled(False)
 
         draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
         label_choose_order = FONT.render("Choose if you want to go first or last!", True, BLACK)
@@ -65,25 +64,30 @@ while True:
         pygame.display.update()
 
         user_go_first = None
-
-        while not go_first_button.clicked and not go_second_button.clicked:
+        position = (0, 0)  # initialize the position
+        while (not go_first_button.is_valid(position, screen)) and (not go_second_button.is_valid(position, screen)):
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     position = event.pos
-                    go_first_button.is_valid(position, screen)
-                    go_second_button.is_valid(position, screen)
                 elif event.type == pygame.QUIT:
                     sys.exit()
 
         # pygame.draw.rect(screen, WHITE, (SQUARESIZE, SQUARESIZE, 7 * SQUARESIZE, SQUARESIZE))
-        if go_first_button.clicked:
+        if go_first_button.is_valid(position, screen):
             user_go_first = True
+            go_second_button.disabled = True
+            go_second_button.show_disabled(screen)
+            pygame.display.update()
             AI_player = AIPlayer(PLAYER_TWO, 5, None)
         else:
             user_go_first = False
+            go_first_button.disabled = True
+            go_first_button.show_disabled(screen)
+            pygame.display.update()
             AI_player = AIPlayer(PLAYER_ONE, 5, None)
 
         game_status = 'gaming'
+        print(go_first_button.disabled, go_second_button.disabled)
     elif game_status == 'gaming':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -98,7 +102,6 @@ while True:
                     pygame.draw.circle(screen, COLOR_PLAYER_TWO, (posx, int(SQUARESIZE / 2 + SQUARESIZE)), RADIUS)
                 pygame.display.update()
 
-            # pygame.display.update()
 
             if user_go_first:
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -144,7 +147,6 @@ while True:
                     if connect_four_game.get_winner() is not None:
                         game_status = 'game_over'
                         break
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     posx, posy = event.pos[0], event.pos[1]
                     if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE:  # if player click the board
@@ -166,6 +168,7 @@ while True:
                                 print("NOT VALID")
                                 label_not_valid = FONT.render("Choose another column!", True, BLACK)
                                 screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
+                                pygame.display.update()
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
                         ...
                     elif restart_button.is_valid(event.pos, screen):
