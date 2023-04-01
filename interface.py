@@ -20,20 +20,21 @@ from connect_four import ConnectFour
 
 UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
 ROW_COUNT, COLUMN_COUNT = 6, 7
-SQUARESIZE = 50
-RADIUS = int(SQUARESIZE / 3)
+SQUARESIZE = 80
+RADIUS = int(SQUARESIZE / 3.5)
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
 SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
-
+BORDER_RADIUS = int(SQUARESIZE / 4)
 pygame.init()
 BUTTOM_COLUMN_WIDTH = ...
 COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
 BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
-BUTTON_WIDTH, BUTTON_HEIGHT = SQUARESIZE , SQUARESIZE
+BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5) , int(SQUARESIZE * 0.7)
 DISABLE_COLOR = (192, 192, 192)  # Grey
-BUTTON_COLOR = BLUE  # todo: decide the color later
+BUTTON_COLOR = BLUE
 pygame.init()
-FONT = pygame.font.Font(None, 15)
+FONT_SIZE = int(SQUARESIZE / 2.5)
+FONT = pygame.font.Font(None, FONT_SIZE)
 
 
 class Button():
@@ -60,9 +61,9 @@ class Button():
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
-        pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        pygame.draw.rect(window, BUTTON_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), border_radius=BORDER_RADIUS)
         darker = (int(BUTTON_COLOR[0] * 0.7), int(BUTTON_COLOR[1] * 0.7), int(BUTTON_COLOR[2] * 0.7))
-        pygame.draw.rect(window, darker, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 3)
+        pygame.draw.rect(window, darker, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), 4, border_radius=BORDER_RADIUS)
         # draw word
         text = FONT.render(self.word, True, WHITE)
         w, h = text.get_size()
@@ -80,7 +81,7 @@ class Button():
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
-        pygame.draw.rect(window, DISABLE_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT))
+        pygame.draw.rect(window, DISABLE_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), border_radius=BORDER_RADIUS)
         # draw word
         text = FONT.render(self.word, True, BLACK)
         w, h = text.get_size()
@@ -112,7 +113,7 @@ class Button():
         self.disabled = value
 
 
-def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
+def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
     """Draw a beautiful disc on window at the given window with given color
         The disc has two layers, color is its inner/base color; a darker color is its outer color
         Preconditions:
@@ -122,7 +123,6 @@ def _draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: 
     # create a darker color and draw the outer circle of the disc
     darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
     pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
-    # pygame.display.update()
 
 
 
@@ -136,23 +136,40 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
     grid = game.grid
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
-            pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            # four corners: c=0 r=0, c=COLUMN_COUNT-1 r=0,
+            if c == 0 and r == 0:
+                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_top_left_radius=BORDER_RADIUS)
+            elif c == COLUMN_COUNT - 1 and r == 0:
+                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_top_right_radius=BORDER_RADIUS)
+            elif c == 0 and r == ROW_COUNT - 1:
+                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_bottom_left_radius=BORDER_RADIUS)
+            elif c == COLUMN_COUNT - 1 and r == ROW_COUNT - 1:
+                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_bottom_right_radius=BORDER_RADIUS)
+            else:
+                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
             pygame.draw.circle(window, WHITE, (
                 int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
     for c in range(COLUMN_COUNT):
         for r in range(ROW_COUNT):
             if grid[ROW_COUNT - 1 - r][c] == PLAYER_TWO:  # Player Two's disc
                 center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
-                _draw_one_disc(window, COLOR_PLAYER_TWO, center)
+                draw_one_disc(window, COLOR_PLAYER_TWO, center)
             elif grid[ROW_COUNT - 1 - r][c] == PLAYER_ONE:  # Player One's disc
                 center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
-                _draw_one_disc(window, COLOR_PLAYER_ONE, center)
+                draw_one_disc(window, COLOR_PLAYER_ONE, center)
     # draw the buttons:
     for button in buttons:
         if button.disabled is True:
             button.show_disabled(window)
         else:
             button.draw(window)
+    # draw player one and its button and player two and its button
+    draw_one_disc(window, COLOR_PLAYER_ONE, (SQUARESIZE * 3, (2 + COLUMN_COUNT) * SQUARESIZE))
+    draw_one_disc(window, COLOR_PLAYER_TWO, (SQUARESIZE * 6, (2 + COLUMN_COUNT) * SQUARESIZE))
+    text1 = FONT.render('player one', True, BLACK)
+    text2 = FONT.render('player two', True, BLACK)
+    window.blit(text1, (int(SQUARESIZE * 3 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
+    window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     pygame.display.update()
 
 

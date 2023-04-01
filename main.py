@@ -19,7 +19,7 @@ import time
 import sys
 import math
 import pygame
-from interface import draw_window, Button, drop_piece, is_valid_location
+from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc
 
 from connect_four import ConnectFour
 
@@ -50,9 +50,7 @@ draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_bu
 
 font = pygame.font.SysFont("comicsansms", 22)
 while True:
-
     # print(game_status)
-
     if game_status == 'before_game':
         print('restarted')
         connect_four_game = ConnectFour()
@@ -74,17 +72,14 @@ while True:
                 elif event.type == pygame.QUIT:
                     sys.exit()
 
-        # pygame.draw.rect(screen, WHITE, (SQUARESIZE, SQUARESIZE, 7 * SQUARESIZE, SQUARESIZE))
         if go_first_button.is_valid(position, screen):
             user_go_first = True
-
             AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
             # AI_player = AIPlayer(PLAYER_TWO, 5, None)
         else:
             user_go_first = False
             # AI_player = AIPlayer(PLAYER_ONE, 5, None)
             AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
-
         go_second_button.disabled, go_first_button.disabled = True, True
         go_second_button.show_disabled(screen)
         go_first_button.show_disabled(screen)
@@ -92,7 +87,6 @@ while True:
 
 
         game_status = 'gaming'
-        print(go_first_button.disabled, go_second_button.disabled)
     elif game_status == 'gaming':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -102,9 +96,9 @@ while True:
                 pygame.draw.rect(screen, WHITE, (0.5 * SQUARESIZE, SQUARESIZE, 8.5 * SQUARESIZE, SQUARESIZE))
                 posx, posy = event.pos[0], event.pos[1]
                 if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE and user_go_first:  # posx, posy in the region for selection and player is user :
-                    pygame.draw.circle(screen, COLOR_PLAYER_ONE, (posx, int(SQUARESIZE / 2 + SQUARESIZE)), RADIUS)  # Olivia 改一下颜色
+                    draw_one_disc(screen, COLOR_PLAYER_ONE, (posx, int(SQUARESIZE / 2 + SQUARESIZE)))
                 elif SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE and not user_go_first:
-                    pygame.draw.circle(screen, COLOR_PLAYER_TWO, (posx, int(SQUARESIZE / 2 + SQUARESIZE)), RADIUS)
+                    draw_one_disc(screen, COLOR_PLAYER_TWO, (posx, int(SQUARESIZE / 2 + SQUARESIZE)))
                 pygame.display.update()
 
 
