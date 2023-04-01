@@ -252,14 +252,6 @@ class ConnectFour:
             if self.grid[y][move_column] == UNOCCUPIED:
                 return (move_column, y)
 
-    def get_opposite_player(self) -> int:
-        """Return the opposite player of self.player.
-
-        Since the current player is either 0 or 1 (PLAYER_ONE or PLAYER_TWO),
-        we can use the x = 1 - x method to get the other possible value.
-        """
-        return 1 - self.get_current_player()
-
     def get_last_move(self) -> tuple[int, tuple[int, int]] | None:
         """ Get the last move of the state.
 
@@ -328,3 +320,16 @@ class ConnectFour:
                 count[connected_so_far] += 1
 
         return count
+
+
+def get_opposite_player(player: int) -> int:
+    """
+    Return the opposite player.
+
+    Since the current player is either 0 or 1 (PLAYER_ONE or PLAYER_TWO),
+    we can use the x = 1 - x method to get the other possible value.
+
+    Preconditions:
+    - player in {PLAYER_ONE, PLAYER_TWO}
+    """
+    return 1 - player
