@@ -165,14 +165,6 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
         else:
             button.draw(window)
     # draw player one and its button and player two and its button
-<<<<<<< Updated upstream
-    draw_one_disc(window, COLOR_PLAYER_ONE, (SQUARESIZE * 3, (2 + COLUMN_COUNT) * SQUARESIZE))
-    draw_one_disc(window, COLOR_PLAYER_TWO, (SQUARESIZE * 6, (2 + COLUMN_COUNT) * SQUARESIZE))
-    text1 = FONT_BUTTON.render('player one', True, BLACK)
-    text2 = FONT_BUTTON.render('player two', True, BLACK)
-    window.blit(text1, (int(SQUARESIZE * 3 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
-    window.blit(text2, (int(SQUARESIZE * 6 - SQUARESIZE / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
-=======
     draw_one_disc(window, COLOR_PLAYER_ONE, (int(SQUARESIZE * 2.5), (2 + COLUMN_COUNT) * SQUARESIZE))
     draw_one_disc(window, COLOR_PLAYER_TWO, (int(SQUARESIZE * 6.5), (2 + COLUMN_COUNT) * SQUARESIZE))
 
@@ -181,7 +173,6 @@ def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]
     width, height = text2.get_size()
     window.blit(text1, (int(SQUARESIZE * 2.5 - width / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
     window.blit(text2, (int(SQUARESIZE * 6.6 - width / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
->>>>>>> Stashed changes
     pygame.display.update()
 
 def print_win(screen: pygame.Surface, word: str) -> None:
