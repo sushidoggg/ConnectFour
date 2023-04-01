@@ -85,16 +85,10 @@ while True:
             # AI_player = AIPlayer(PLAYER_ONE, 5, None)
             AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
 
-            go_second_button.disabled = True
-            go_second_button.show_disabled(screen)
-            pygame.display.update()
-            AI_player = AIPlayer(PLAYER_TWO, 5, None)
-        else:
-            user_go_first = False
-            go_first_button.disabled = True
-            go_first_button.show_disabled(screen)
-            pygame.display.update()
-            AI_player = AIPlayer(PLAYER_ONE, 5, None)
+        go_second_button.disabled, go_first_button.disabled = True, True
+        go_second_button.show_disabled(screen)
+        go_first_button.show_disabled(screen)
+        pygame.display.update()
 
 
         game_status = 'gaming'
