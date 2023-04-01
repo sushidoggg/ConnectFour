@@ -252,28 +252,75 @@ class AlysaAIPlayer(Player):
         self._depth = search_depth
 
     def choose_column(self, game: ConnectFour) -> int:
+        print('jinlaile')
         return pick_best_col_alysa_AI(game, self)
+
+
+def evaluate_window_alysa_AI(window: list[int], player) -> int:
+    print('hahahah')
+    score = 0
+    opponent_num = PLAYER_ONE
+    if player.player_num == PLAYER_ONE:
+        opponent_num = PLAYER_TWO
+
+    if window.count(player.player_num) == 4:
+        score += 100
+    elif window.count(player.player_num) == 3 and window.count(UNOCCUPIED) == 1:
+        score += 10
+    elif window.count(player.player_num == 2) and window.count(UNOCCUPIED) == 2:
+        score += 5
+
+    if window.count(opponent_num) == 3 and window.count(UNOCCUPIED) == 1:
+        score -= 80
+
+    return score
+
 
 def score_position_for_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
     """
     piece = 0 if PLAYER_ONE, piece = 1 if PLAYER_TWO
     """
     # Score horizontal
+    print('aba')
     score = 0
+
+    ## score center column
+    center_array = [row[GRID_WIDTH // 2] for row in connect_four.grid]
+    center_count = center_array.count(player.player_num)
+    score += 6 * center_count
+
     for r in range(GRID_HEIGHT):
         row_array = [i for i in list(connect_four.grid[r])]
         for c in range(GRID_WIDTH - 3):
             window = row_array[c: c + 4]
-            if window.count(player.player_num) == 4:
-                score += 100
-            elif window.count(player.player_num) == 3 and window.count(UNOCCUPIED) == 1:
-                score += 10
+            score += evaluate_window_alysa_AI(window, player)
+            print('2')
+            print(c)
+    # score vertical
+    for c in range(GRID_WIDTH):
+        col_array = [row[c] for row in connect_four.grid]
+        for r in range(GRID_HEIGHT - 3):
+            window = col_array[r: r + 4]
+            score += evaluate_window_alysa_AI(window, player)
+            print('3')
+    # score positive sloped diagonal
+    for r in range(GRID_HEIGHT - 3):
+        for c in range(GRID_WIDTH - 3):
+            window = [connect_four.grid[r + i][c + i] for i in range(4)]
+            score += evaluate_window_alysa_AI(window, player)
+
+    # score negative sloped diagonal
+    for r in range(GRID_HEIGHT - 3):
+        for c in range(GRID_WIDTH - 3):
+            window = [connect_four.grid[r + 3 - i][c + i] for i in range(4)]
+            score += evaluate_window_alysa_AI(window, player)
 
     return score
 
 
 def pick_best_col_alysa_AI(connect_four: ConnectFour, player: Player) -> int:
-    best_score = 0
+    print('5')
+    best_score = -10000
 
     valid_columns = connect_four.get_possible_columns()
     best_col = random.choice(valid_columns)
