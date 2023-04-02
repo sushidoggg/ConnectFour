@@ -20,12 +20,8 @@ Additionally, this file references a2_game_tree.py from CSC111 Assignment 2,
 which is also Copyright (c) 2023 Mario Badr, David Liu, and Isaac Waller.
 """
 from __future__ import annotations
-
-import math
 from typing import Optional
-from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, get_opposite_player
-
-GAME_START_MOVE = "*"
+from constant import GAME_START_MOVE, PLAYER_ONE
 
 
 class GameTree:
@@ -147,3 +143,8 @@ class GameTree:
         else:
             min_subtree_score = min(subtree.score for subtree in self.get_subtrees())
             self.score = min_subtree_score
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)

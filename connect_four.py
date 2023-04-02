@@ -24,9 +24,7 @@ which is also Copyright (c) 2023 Mario Badr, David Liu, and Angela Zavaleta Bern
 from __future__ import annotations
 from typing import Optional
 
-UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
-GRID_WIDTH, GRID_HEIGHT = 7, 6
-ORIENTATIONS = ((0, 1), (1, 0), (1, 1), (1, -1))    # Horizontal, vertical, two diagonal
+from constant import UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, ORIENTATIONS
 
 
 class ConnectFour:
@@ -275,7 +273,7 @@ class ConnectFour:
         else:
             return []
 
-    def get_winner(self) -> Optional[str]:
+    def get_winner(self) -> Optional[int]:
         """Return the winner of the game (either PLAYER_ONE or PLAYER_TWO).
 
         Return None if the game is not over.
@@ -283,43 +281,6 @@ class ConnectFour:
         Return UNOCCUPIED if there is a draw game.
         """
         return self._winner
-
-    def get_connected_counts(self, move_position: tuple[int, int], player: int) -> dict[int | int]:
-        """ Return mapping of number of connected discs to how many such consecutive discs exist
-        if the player makes the move at move_column.
-
-        We only count consecutive discs induced by the given move.
-        For example, {4: 1, 3: 2} means that this move will create a 4-in-a-row and two 3-in-a-row.
-
-        Preconditions:
-        - player in {PLAYER_ONE, PLAYER_TWO}
-        - move_column in self._possible_columns
-        """
-        count = dict()
-
-        for i in range(4):
-            # Check for four orientations (horizontal, vertical, two diagonal) for 4 connected discs.
-            orientation_x, orientation_y = ORIENTATIONS[i]
-            connected_so_far = 1    # a disc is at least connected with itself
-
-            # Check for opposite directions. For example, left & right are two
-            # opposite directions for horizontal.
-            for direction_x, direction_y in ((orientation_x, orientation_y), (-orientation_x, -orientation_y)):
-
-                pos_x, pos_y = move_position[0] + direction_x, move_position[1] + direction_y
-                while 0 <= pos_x < GRID_WIDTH and 0 <= pos_y < GRID_HEIGHT \
-                        and self.grid[pos_y][pos_x] == player and connected_so_far < 4:
-                    connected_so_far += 1
-                    # Update the next position to check
-                    pos_x += direction_x
-                    pos_y += direction_y
-
-            if connected_so_far not in count or connected_so_far == 1:
-                count[connected_so_far] = 1
-            else:
-                count[connected_so_far] += 1
-
-        return count
 
 
 def get_opposite_player(player: int) -> int:
@@ -333,3 +294,8 @@ def get_opposite_player(player: int) -> int:
     - player in {PLAYER_ONE, PLAYER_TWO}
     """
     return 1 - player
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)
