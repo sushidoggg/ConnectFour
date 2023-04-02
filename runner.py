@@ -316,18 +316,21 @@ def run_game_between_ai() -> None:
     """
     ...
     """
-    game_number = int(input('How many game do you want to run?'))
+    game_number = int(input('How many games do you want to run?'))
     while game_number <= 0:
         game_number = int(input('Invalid input. Please enter a number greater than 0.'))
     stats_so_far = [0, 0, 0]
 
+    print('Choose the first AI player.')
+    ai_first = _get_player_from_console(PLAYER_ONE)
+    ai_second = _get_player_from_console(PLAYER_TWO)
+
     for i in range(game_number):
-        print('Choose the first AI player.')
-        first_player = _get_player_from_console(PLAYER_ONE)
-        second_player = _get_player_from_console(PLAYER_TWO)
+        connect_four = ConnectFour()
+        first_player = _copy_player(ai_first)
+        second_player = _copy_player(ai_second)
         current_player = first_player
 
-        connect_four = ConnectFour()
         while connect_four.get_winner() is None:
 
             move_column = current_player.choose_column(connect_four)
@@ -373,6 +376,18 @@ def _get_player_from_console(player_number: int) -> Player:
         while search_depth <= 0:
             search_depth = int(input('Invalid input. Please enter an integer greater than 0.'))
         return GreedyPlayer(player_number, search_depth, None)
+
+
+def _copy_player(player: Player) -> Player:
+    """
+    ...
+    """
+    if isinstance(player, RandomPlayer):
+        return RandomPlayer(player.player_num)
+    elif isinstance(player, ScoringPlayer):
+        return ScoringPlayer(player.player_num)
+    elif isinstance(player, GreedyPlayer):
+        return GreedyPlayer(player.player_num, player.depth, None)
 
 
 if __name__ == '__main__':
