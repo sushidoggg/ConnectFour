@@ -20,8 +20,10 @@ Additionally, this file references a2_game_tree.py from CSC111 Assignment 2,
 which is also Copyright (c) 2023 Mario Badr, David Liu, and Isaac Waller.
 """
 from __future__ import annotations
+
+import math
 from typing import Optional
-from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
+from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, get_opposite_player
 
 GAME_START_MOVE = "*"
 
@@ -37,22 +39,23 @@ class GameTree:
     - player: Either PLAYER_ONE or PLAYER_TWO indicating which player is doing this move.
     - score: A float between 0.0 to 1.0 (inclusive), representing how this move is favorable to self.player.
 
+
     Representation Invariants:
     - column == GAME_START_MOVE or 0 <= self.column < 7
     - self.column == GAME_START_MOVE or self.player in {PLAYER_ONE, PLAYER_TWO}
     - 0.0 <= self.score <= 1.0
     # TODO: Introduce minimum score & average score
     # TODO: Player
-
+    Current player will choose one of the possible moves in its subtress.
     """
     move_column: int | str
     initial_player: int
     current_player: Optional[int]
-    score: float
+    score: int
     _subtrees: dict[int, GameTree]
 
     def __init__(self, move_column: str | int, initial_player: int, current_player: Optional[int],
-                 score: Optional[float] = 0) -> None:
+                 score: Optional[int] = 0) -> None:
         """ Initialize a new game tree.
 
         Precondition:
@@ -127,9 +130,9 @@ class GameTree:
     def add_subtree(self, subtree: GameTree) -> None:
         """Add a subtree to this game tree."""
         self._subtrees[subtree.move_column] = subtree
-        self._update_score()
+        self.update_score()
 
-    def _update_score(self) -> None:
+    def update_score(self) -> None:
         """ Update the score for each new move.
         """
         if len(self._subtrees) == 0:
@@ -138,20 +141,9 @@ class GameTree:
 
         # Choose the maximum score among all subtrees and reverse it to be self's score.
         # TODO: Write a docstring and explain why
-        if self.initial_player == self.current_player:
+        if self.initial_player != self.current_player:
             max_subtree_score = max(subtree.score for subtree in self.get_subtrees())
-            self.score = - max_subtree_score
+            self.score = max_subtree_score
         else:
             min_subtree_score = min(subtree.score for subtree in self.get_subtrees())
-            self.score = - min_subtree_score
-
-    def get_average_subtree_score(self) -> float:
-        """ Return the average of all subtree's score.
-
-        Return self.score if there is no subtree
-        """
-        if len(self._subtrees) == 0:
-            return self.score
-        else:
-            subtrees = self.get_subtrees()
-            return sum(subtree.score for subtree in subtrees) / len(self._subtrees)
+            self.score = min_subtree_score

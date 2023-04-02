@@ -13,28 +13,24 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-<<<<<<< Updated upstream
-from player import AIPlayer, AlysaAIPlayer, RandomPlayer
-=======
+
 from player import GreedyPlayer, RandomPlayer, ScoringPlayer
->>>>>>> Stashed changes
 
 import time
 import sys
 import math
 import pygame
-from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc, print_win
+from interface import draw_window, Button, drop_piece, is_valid_location, draw_one_disc, print_win, draw_hint_disc
 
 from connect_four import ConnectFour
 
 pygame.init()  # pygame needs to be initialized before defining FONT
 
-from interface import SQUARESIZE, RADIUS, WINDOW_WIDTH, WINDOW_HEIGHT, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
-    BLACK, ROW_COUNT, COLUMN_COUNT, FONT_BUTTON, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS, UNOCCUPIED
+from interface import SQUARESIZE, COLOR_PLAYER_ONE, COLOR_PLAYER_TWO, BLUE, WHITE, \
+    BLACK, PLAYER_ONE, PLAYER_TWO, SIZE, FONT_WORDS, FONT_WIN_STATUS, UNOCCUPIED, AI_RESPONSE_TIME
 
 
 connect_four_game = ConnectFour()
-# game_over = False
 
 screen = pygame.display.set_mode(SIZE)
 pygame.display.flip()
@@ -50,18 +46,21 @@ hint_button = Button(x=10 * SQUARESIZE, y=6 * SQUARESIZE, word='HINT')
 restart_button = Button(x=10 * SQUARESIZE, y=8 * SQUARESIZE, word='RESTART')
 go_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
 go_second_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
+buttons = [hint_button, restart_button, go_first_button, go_second_button]
 draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-
+clock = pygame.time.Clock()
 while True:
     # print(game_status)
     if game_status == 'before_game':
         print('restarted')
         connect_four_game = ConnectFour()
+        # activate two modes buttons and de-activate the other two
         go_first_button.reset_disabled(False)
         go_second_button.reset_disabled(False)
-        restart_button.reset_disabled(False)
-
-        draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
+        restart_button.reset_disabled(True)
+        hint_button.reset_disabled(True)
+        pygame.display.set_caption("CONNECT FOUR - PLAY AGAINST AI")
+        draw_window(screen, connect_four_game, buttons)
         label_choose_order = FONT_WORDS.render("Choose if you want to go first or last!", True, BLACK)
         screen.blit(label_choose_order, (SQUARESIZE, SQUARESIZE))
         pygame.display.update()
@@ -77,20 +76,7 @@ while True:
 
         if go_first_button.is_valid(position, screen):
             user_go_first = True
-            # AI_player = RandomPlayer(2)
-<<<<<<< Updated upstream
-            AI_player = AlysaAIPlayer(PLAYER_TWO, 5, None)
-            # AI_player = AIPlayer(PLAYER_TWO, 5, None)
-        else:
-            user_go_first = False
-            # AI_player = AIPlayer(PLAYER_ONE, 5, None)
-            AI_player = AlysaAIPlayer(PLAYER_ONE, 5, None)
-            # AI_player = RandomPlayer(2)
-        go_second_button.disabled, go_first_button.disabled = True, True
-        go_second_button.show_disabled(screen)
-        go_first_button.show_disabled(screen)
-        pygame.display.update()
-=======
+    
             AI_player = GreedyPlayer(PLAYER_TWO, 5, None)
             # AI_player = ScoringPlayer(PLAYER_TWO)
         else:
@@ -103,7 +89,6 @@ while True:
         restart_button.reset_disabled(False)
         hint_button.reset_disabled(False)
         draw_window(screen, connect_four_game, buttons)
->>>>>>> Stashed changes
 
         game_status = 'gaming'
     elif game_status == 'gaming':
@@ -121,78 +106,73 @@ while True:
                 pygame.display.update()
 
 
-            if user_go_first:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    posx, posy = event.pos[0], event.pos[1]
-                    if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE:  # if player click the board
-                        col = None
-                        if connect_four_game.get_current_player() == PLAYER_ONE:
-                            col = int(math.floor(posx / SQUARESIZE) - 1)
+            if event.type == pygame.MOUSEBUTTONDOWN and user_go_first:
+                posx, posy = event.pos[0], event.pos[1]
+                # if player click on the board
+                if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE:
+                    col = int(math.floor(posx / SQUARESIZE) - 1)
+                    valid = is_valid_location(connect_four_game, col)
+                    if valid:
+                        drop_piece(connect_four_game, col)
+                        draw_window(screen, connect_four_game, buttons)
+                        if connect_four_game.get_winner() is not None:
+                            game_status = 'game_over'
+                            break
+                        # AI's turn
+                        clock.tick(AI_RESPONSE_TIME)
+                        col_AI = AI_player.choose_column(connect_four_game)
+                        drop_piece(connect_four_game, col_AI)
+                        draw_window(screen, connect_four_game, buttons)
 
-                            valid = is_valid_location(connect_four_game, col)
-                            if valid:
-                                drop_piece(connect_four_game, col)
-                                draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-                                if connect_four_game.get_winner() is not None:
-                                    game_status = 'game_over'
-                                    break
-
-                                time.sleep(1)
-
-                                col_AI = AI_player.choose_column(connect_four_game)
-
-                                drop_piece(connect_four_game, col_AI)
-                                draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-
-                                if connect_four_game.get_winner() is not None:
-                                    game_status = 'game_over'
-                                    break
-                            else:
-                                label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
-                                screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
-                                pygame.display.update()
-                    elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
-                        ...
-                    elif restart_button.is_valid(event.pos, screen):
-                        game_status = 'before_game'
-                        break
-            else:  # AI goes first
-
-                if connect_four_game.get_current_player() == PLAYER_ONE:
+                        if connect_four_game.get_winner() is not None:
+                            game_status = 'game_over'
+                            break
+                    else:
+                        label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
+                        screen.blit(label_not_valid, (SQUARESIZE, SQUARESIZE))
+                        pygame.display.update()
+                elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
+                    col = AI_player.hint_opponent(connect_four_game)
+                    draw_hint_disc(screen, col, connect_four_game)
+                elif restart_button.is_valid(event.pos, screen):
+                    game_status = 'before_game'
+                    break
+            elif not user_go_first:  # AI goes first
+                if connect_four_game.get_current_player() == PLAYER_ONE:  # if it's AI's turn
+                    clock.tick(AI_RESPONSE_TIME)
                     col_AI = AI_player.choose_column(connect_four_game)
                     drop_piece(connect_four_game, col_AI)
-                    draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
+                    draw_window(screen, connect_four_game, buttons)
 
                     if connect_four_game.get_winner() is not None:
                         game_status = 'game_over'
                         break
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     posx, posy = event.pos[0], event.pos[1]
-                    if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE:  # if player click the board
-                        col = None
-                        if connect_four_game.get_current_player() == PLAYER_TWO:
-                            col = int(math.floor(posx / SQUARESIZE) - 1)
-
-                            valid = is_valid_location(connect_four_game, col)
-                            if valid:
-                                drop_piece(connect_four_game, col)
-                                draw_window(screen, connect_four_game, [hint_button, restart_button, go_first_button, go_second_button])
-                                if connect_four_game.get_winner() is not None:
-                                    game_status = 'game_over'
-                                    break
-
-                                time.sleep(1)
-
-                            else:
-                                print("NOT VALID")
-                                label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
-                                screen.blit(label_not_valid, (SQUARESIZE + 40, SQUARESIZE + 10))
-                                pygame.display.update()
+                    # if player click the board
+                    if SQUARESIZE <= posx <= 8 * SQUARESIZE and SQUARESIZE <= posy <= 8 * SQUARESIZE:
+                        # if connect_four_game.get_current_player() == PLAYER_TWO:
+                        col = int(math.floor(posx / SQUARESIZE) - 1)
+                        valid = is_valid_location(connect_four_game, col)
+                        if valid:
+                            drop_piece(connect_four_game, col)
+                            draw_window(screen, connect_four_game, buttons)
+                            if connect_four_game.get_winner() is not None:
+                                game_status = 'game_over'
+                                break
+                        else:
+                            print("NOT VALID")
+                            label_not_valid = FONT_WORDS.render("Choose another column!", True, BLACK)
+                            screen.blit(label_not_valid, (SQUARESIZE, SQUARESIZE))
+                            pygame.display.update()
                     elif hint_button.is_valid(event.pos, screen):  # player click HINT button:
-                        ...
+                        col = AI_player.hint_opponent(connect_four_game)
+                        draw_hint_disc(screen, col, connect_four_game)
                     elif restart_button.is_valid(event.pos, screen):
                         game_status = 'before_game'
                         break
+
     elif game_status == 'game_over':
         if (connect_four_game.get_winner() == PLAYER_ONE and user_go_first) or \
                 (connect_four_game.get_winner() == PLAYER_TWO and not user_go_first):
@@ -201,12 +181,7 @@ while True:
             print_win(screen, 'TIE!')
         else:
             print_win(screen, 'AI Win!')
-
-            # label = FONT_WORDS.render("AI wins!", True, BLACK)
-            # screen.blit(label, (SQUARESIZE, 10))
-
         pygame.display.update()
-        time.sleep(0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -218,3 +193,5 @@ while True:
 
     else:
         print('Invalid game_status')
+    print('ONE WHILE LOOP')
+    clock.tick(200)
