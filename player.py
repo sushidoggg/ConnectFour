@@ -26,11 +26,11 @@ which is also Copyright (c) 2023 Mario Badr, David Liu, and Angela Zavaleta Bern
 
 from __future__ import annotations
 
-import math
 import random
 from typing import Optional
 from game_tree import GameTree, GAME_START_MOVE
-from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, get_opposite_player
+from connect_four import ConnectFour, get_opposite_player
+from constant import UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
 
 
 class Player:
@@ -340,6 +340,9 @@ def _score_slice(grid_slice: list[int], player: int) -> int:
 
 
 if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)
+
     stats_so_far = [0, 0, 0]
 
     for i in range(100):
@@ -347,8 +350,8 @@ if __name__ == '__main__':
         second_player = GreedyPlayer(PLAYER_TWO, 5, None)
         # second_player = GreedyPlayer(PLAYER_TWO, 3, None)
 
-        #first_player = GreedyPlayer(PLAYER_ONE, 5, None)
-        #second_player = ScoringPlayer(PLAYER_TWO)
+        # first_player = GreedyPlayer(PLAYER_ONE, 5, None)
+        # second_player = ScoringPlayer(PLAYER_TWO)
 
         current_player = first_player
 
