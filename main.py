@@ -13,7 +13,6 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
-
 import sys
 import pygame
 from runner import GameRunner, run_game_interactive, run_game_between_ai
@@ -23,6 +22,14 @@ from constant import WINDOW_WIDTH, WINDOW_HEIGHT
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
+
+    # import python_ta
+    # python_ta.check_all(config={
+    #     'max-line-length': 120,
+    #     'max-nested-blocks': 4,
+    #     'extra-imports': ['__future__', 'sys', 'pygame', 'runner', 'constant'],
+    #     'disable': ['unused-import'],
+    # })
 
     # The following section of code allows you to play against our Greedy AI Player in a Pygame window.
     # =================================================================================================================

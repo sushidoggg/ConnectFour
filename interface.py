@@ -158,7 +158,7 @@ class GameBoard:
         """
         return (position[0] - self.x) // SQUARESIZE
 
-    def record_move(self, move_position: tuple[int, int], disc_type) -> None:
+    def record_move(self, move_position: tuple[int, int], disc_type: int) -> None:
         """
         ...
         """
@@ -203,7 +203,7 @@ class Disc:
         draw_circle(surface, self.x, self.y, RADIUS, self.outline_color)
         draw_circle(surface, self.x, self.y, int(RADIUS * 4 / 5), self.filled_color)
 
-    def update_color_and_type(self, disc_type) -> None:
+    def update_color_and_type(self, disc_type: int) -> None:
         """
         ...
         """
@@ -222,29 +222,25 @@ class Label:
     """
     ...
     """
-    x: int
-    y: int
+    position: tuple[int, int]
     text: pygame.Surface
     font: pygame.font.Font
     color: tuple[int, int, int]
+    background: Optional[tuple[pygame.Rect, tuple[int, int, int]]]
     visible: bool
-    background_rect: Optional[pygame.Rect]
-    background_color: Optional[tuple[int, int, int]]
     align: str
 
-    def __init__(self, x: int, y: int, text: str, font: pygame.font.Font, color: tuple[int, int, int],
-                 background_rect: Optional[pygame.Rect] = None,
-                 background_color: Optional[tuple[int, int, int]] = None, visible: bool = True,
-                 align: str = 'center') -> None:
+    def __init__(self, position: tuple[int, int], text: str, text_style: tuple[pygame.font.Font, tuple[int, int, int]],
+                 background: Optional[tuple[pygame.Rect, tuple[int, int, int]]] = None) -> None:
         """
         ...
         """
-        self.x, self.y = x, y   # Center x, Center y
-        self.font, self.color = font, color
+        self.position = position
+        self.font, self.color = text_style
         self.update_text(text)
-        self.visible = visible
-        self.background_rect, self.background_color = background_rect, background_color
-        self.align = align
+        self.visible = True
+        self.background = background
+        self.align = 'center'
 
     def draw(self, surface: pygame.Surface) -> None:
         """
@@ -252,14 +248,15 @@ class Label:
         """
         if not self.visible:
             return
-        if self.background_rect is not None:
-            pygame.draw.rect(surface, self.background_color, self.background_rect)
+        if self.background is not None:
+            background_rect, background_color = self.background
+            pygame.draw.rect(surface, background_color, background_rect)
 
         if self.align == 'center':
-            text_rect = self.text.get_rect(center=(self.x, self.y))
+            text_rect = self.text.get_rect(center=self.position)
             surface.blit(self.text, text_rect)
         elif self.align == 'left':
-            surface.blit(self.text, (self.x, self.y))
+            surface.blit(self.text, self.position)
 
     def update_text(self, text: str) -> None:
         """
@@ -268,7 +265,7 @@ class Label:
         self.text = self.font.render(text, True, self.color)
 
 
-def draw_circle(surface, x, y, radius, color) -> None:
+def draw_circle(surface: pygame.Surface, x: int, y: int, radius: int, color: tuple[int, int, int]) -> None:
     """
     Draw an anti-aliased circle at the position (x, y) given the radius and color
     """
@@ -306,3 +303,10 @@ def draw_rounded_rect(surface: pygame.Surface, rect: pygame.Rect, color: tuple[i
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['__future__', 'typing', 'pygame', 'constant'],
+    })
