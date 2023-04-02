@@ -141,7 +141,7 @@ class GameTree:
 
         # Choose the maximum score among all subtrees and reverse it to be self's score.
         # TODO: Write a docstring and explain why
-        if self.initial_player == self.current_player:
+        if self.initial_player != self.current_player:
             max_subtree_score = max(subtree.score for subtree in self.get_subtrees())
             self.score = max_subtree_score
         else:
