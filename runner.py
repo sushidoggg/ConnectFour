@@ -4,7 +4,7 @@
 from typing import Optional
 import pygame
 from connect_four import ConnectFour
-from player import RandomPlayer, GreedyPlayer, ScoringPlayer
+from player import Player, RandomPlayer, GreedyPlayer, ScoringPlayer
 from interface import Button, GameBoard, Disc, Label
 from constant import GAME_NOT_STARTED, GAMING, GAME_OVER, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT, \
     SQUARESIZE, GRID_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, \
@@ -276,14 +276,103 @@ def run_game_interactive() -> None:
     """
     ...
     """
-    ...
+    connect_four = ConnectFour()
+
+    first_player = input('Who goes first? Please type AI or Human:')
+    while first_player not in {'AI', 'Human'}:
+        first_player = input('Invalid input. Please type AI or Human.')
+
+    if first_player == 'AI':
+        ai_player = _get_player_from_console(PLAYER_ONE)
+        second_player = 'Human'
+    else:
+        ai_player = _get_player_from_console(PLAYER_ONE)
+        second_player = 'AI'
+
+    current_player = first_player
+
+    while connect_four.get_winner() is None:
+        if current_player == 'Human':
+            player_move = int(input('Please choose column:'))
+            while player_move < 0 or player_move > 6:
+                player_move = int(input('Invalid input. Please enter a number between 0 and 6.'))
+            connect_four.record_player_move(player_move)
+            current_player = 'AI'
+        else:
+            print('AI is thinking...')
+            connect_four.record_player_move(ai_player.choose_column(connect_four))
+            current_player = 'Human'
+        print(connect_four)
+
+    if connect_four.get_winner() == PLAYER_ONE:
+        print(f'{first_player} Wins!')
+    elif connect_four.get_winner() == PLAYER_TWO:
+        print(f'{second_player} Wins!')
+    else:
+        print('Ties!')
 
 
 def run_game_between_ai() -> None:
     """
     ...
     """
+    game_number = int(input('How many game do you want to run?'))
+    while game_number <= 0:
+        game_number = int(input('Invalid input. Please enter a number greater than 0.'))
+    stats_so_far = [0, 0, 0]
+
+    for i in range(game_number):
+        print('Choose the first AI player.')
+        first_player = _get_player_from_console(PLAYER_ONE)
+        second_player = _get_player_from_console(PLAYER_TWO)
+        current_player = first_player
+
+        connect_four = ConnectFour()
+        while connect_four.get_winner() is None:
+
+            move_column = current_player.choose_column(connect_four)
+            connect_four.record_player_move(move_column)
+
+            if current_player == first_player:
+                current_player = second_player
+            else:
+                current_player = first_player
+
+        winner = connect_four.get_winner()
+        if winner == PLAYER_ONE:
+            stats_so_far[0] += 1
+            print(f'{i + 1}th game, Player one wins.')
+        elif winner == PLAYER_TWO:
+            stats_so_far[1] += 1
+            print(f'{i + 1}th game, Player two wins.')
+        else:
+            stats_so_far[2] += 1
+            print(f'{i + 1}th game, tie.')
+        print(connect_four)
+
+        print(f'Player one wins {stats_so_far[0]} times. Player two wins {stats_so_far[1]} times. Game ties '
+              f'{stats_so_far[2]} times.')
+
+
+def _get_player_from_console(player_number: int) -> Player:
+    """
     ...
+    """
+    print('Please choose an AI Player. Enter a number from 1 to 3.')
+    player_type = int(input('1 = Random Player, 2 = Scoring Player, 3 = Greedy Player'))
+    while player_type < 1 or player_type > 3:
+        player_type = int(input('Invalid input. Please enter a number from 1 to 3.'))
+
+    if player_type == 1:
+        return RandomPlayer(player_number)
+    elif player_type == 2:
+        return ScoringPlayer(player_number)
+    else:
+        print('Please enter a positive integer as the search depth of the Greedy Player.')
+        search_depth = int(input('If the number is too large (>= 6), it may take a long time to compute a result.'))
+        while search_depth <= 0:
+            search_depth = int(input('Invalid input. Please enter an integer greater than 0.'))
+        return GreedyPlayer(player_number, search_depth, None)
 
 
 if __name__ == '__main__':
@@ -296,4 +385,5 @@ if __name__ == '__main__':
         'max-nested-blocks': 4,
         'extra-imports': ['typing', 'pygame', 'connect_four', 'player', 'interface', 'constant'],
         'disable': ['no-member', 'too-many-instance-attributes'],
+        'allowed-io': ['run_game_interactive', 'run_game_between_ai', '_get_player_from_console']
     })

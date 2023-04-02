@@ -256,8 +256,19 @@ def update_complete_tree_to_depth(game_tree: GameTree, game: ConnectFour, d: int
 
     if not game_tree.get_subtrees():
         # game_tree is a leaf
-        if game.get_winner() is None and d >= 0:
+        if game.get_winner() is not None:
+            if game.get_winner() == initial_player:
+                game_tree.score = 1000
+            elif game.get_winner() == get_opposite_player(initial_player):
+                game_tree.score = -500
+            else:
+                # Game draws, so score = 0
+                game_tree.score = 0
 
+        elif d == 0:
+            game_tree.score = score_game(game, initial_player)
+
+        elif d > 0:
             possible_columns = game.get_possible_columns()
             for column in possible_columns:
                 new_game = game.copy_and_record_player_move(column)
@@ -342,76 +353,10 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
 
-    import python_ta
-    python_ta.check_all(config={
-        'max-line-length': 120,
-        'max-nested-blocks': 4,
-        'extra-imports': ['__future__', 'typing', 'random', 'connect_four', 'game_tree', 'constant'],
-    })
-
-    stats_so_far = [0, 0, 0]
-
-    for i in range(0):
-        first_player = GreedyPlayer(PLAYER_ONE, 4, None)
-        second_player = GreedyPlayer(PLAYER_TWO, 5, None)
-        # second_player = GreedyPlayer(PLAYER_TWO, 3, None)
-
-        # first_player = GreedyPlayer(PLAYER_ONE, 5, None)
-        # second_player = ScoringPlayer(PLAYER_TWO)
-
-        current_player = first_player
-
-        connect_four = ConnectFour()
-        while connect_four.get_winner() is None:
-
-            move_column = current_player.choose_column(connect_four)
-            connect_four.record_player_move(move_column)
-            # print(connect_four)
-
-            if current_player == first_player:
-                current_player = second_player
-            else:
-                current_player = first_player
-
-        winner = connect_four.get_winner()
-        if winner == PLAYER_ONE:
-            stats_so_far[0] += 1
-            print(f'{i + 1}th game, Player one wins.')
-        elif winner == PLAYER_TWO:
-            stats_so_far[1] += 1
-            print(f'{i + 1}th game, Player two wins.')
-        else:
-            stats_so_far[2] += 1
-            print(f'{i + 1}th game, tie.')
-        print(connect_four)
-
-        print(f'Player one wins {stats_so_far[0]} times. Player two wins {stats_so_far[1]} times. Game ties '
-              f'{stats_so_far[2]} times.')
-
-    # Uncomment the following code to play against Greedy AI in console
-
-    # first_player = input('Who goes first? Please type AI or Human:')
-    # if first_player == 'AI':
-    #     AI_player = GreedyPlayer(PLAYER_ONE, 5, None)
-    #     second_player = 'Human'
-    # else:
-    #     AI_player = GreedyPlayer(PLAYER_TWO, 5, None)
-    #     second_player = 'AI'
+    # import python_ta
+    # python_ta.check_all(config={
+    #     'max-line-length': 120,
+    #     'max-nested-blocks': 4,
+    #     'extra-imports': ['__future__', 'typing', 'random', 'connect_four', 'game_tree', 'constant'],
+    # })
     #
-    # current_player = first_player
-    #
-    # while connect_four.get_winner() is None:
-    #     if current_player == 'Human':
-    #         player_move = eval(input('Please choose column:'))
-    #         connect_four.record_player_move(player_move)
-    #         current_player = 'AI'
-    #     else:
-    #         print('AI is thinking...')
-    #         connect_four.record_player_move(AI_player.choose_column(connect_four))
-    #         current_player = 'Human'
-    #     print(connect_four)
-    #
-    # if connect_four.get_winner() == PLAYER_ONE:
-    #     print(first_player + ' wins!')
-    # else:
-    #     print(second_player + ' wins!')

@@ -59,4 +59,4 @@ if __name__ == '__main__':
     # The following line of code runs games between two of our AIs by your choice.
     # You will be guided by instructions in the console to choose the two AIs.
     # =================================================================================================================
-    # run_game_interactive()
+    # run_game_between_ai()
