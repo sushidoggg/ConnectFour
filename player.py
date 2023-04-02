@@ -48,12 +48,12 @@ class Player:
         """
         self.player_num = player_num
 
-    def choose_column(self, game: ConnectFour) -> int:
+    def choose_column(self, game_state: ConnectFour) -> int:
         """ Return a chosen column of grid given the current game state.
         """
         raise NotImplementedError
 
-    def hint_opponent(self, game: ConnectFour) -> int:
+    def hint_opponent(self, game_state: ConnectFour) -> int:
         """ Return a chosen column of grid given the current game state.
         """
         raise NotImplementedError
@@ -63,20 +63,66 @@ class RandomPlayer(Player):
     """ A player that performs randomly by selecting one of the possible moves at random.
     """
 
-    def choose_column(self, game: ConnectFour) -> int:
+    def choose_column(self, game_state: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
-        possible_columns = game.get_possible_columns()
+        possible_columns = game_state.get_possible_columns()
         return random.choice(possible_columns)
 
-    def hint_opponent(self, game: ConnectFour) -> int:
+    def hint_opponent(self, game_state: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
-        possible_columns = game.get_possible_columns()
+        possible_columns = game_state.get_possible_columns()
         return random.choice(possible_columns)
 
 
-class AIPlayer(Player):
+class ScoringPlayer(Player):
+    """
+    # TODO
+    """
+    def choose_column(self, game_state: ConnectFour) -> int:
+        """ Return a chosen column from all possible columns.
+        """
+        possible_columns = game_state.get_possible_columns()
+        best_column_so_far = possible_columns[0]
+
+        new_game_state = game_state.copy_and_record_player_move(best_column_so_far)
+        best_score_so_far = score_game_state(new_game_state, self.player_num)
+
+        for i in range(1, len(possible_columns)):
+            column = possible_columns[i]
+            new_game_state = game_state.copy_and_record_player_move(column)
+
+            score = score_game_state(new_game_state, self.player_num)
+            if score > best_score_so_far:
+                best_score_so_far = score
+                best_column_so_far = column
+
+        return best_column_so_far
+
+    def hint_opponent(self, game_state: ConnectFour) -> int:
+        """ Return a chosen column from all possible columns.
+        """
+        opponent = get_opposite_player(self.player_num)
+        possible_columns = game_state.get_possible_columns()
+        best_column_so_far = possible_columns[0]
+
+        new_game_state = game_state.copy_and_record_player_move(best_column_so_far)
+        best_score_so_far = score_game_state(new_game_state, opponent)
+
+        for i in range(1, len(possible_columns)):
+            column = possible_columns[i]
+            new_game_state = game_state.copy_and_record_player_move(column)
+
+            score = score_game_state(new_game_state, opponent)
+            if score > best_score_so_far:
+                best_score_so_far = score
+                best_column_so_far = column
+
+        return best_column_so_far
+
+
+class GreedyPlayer(Player):
     """
     # TODO
     """
@@ -132,6 +178,7 @@ class AIPlayer(Player):
         self._game_tree = self._game_tree.get_subtree_by_column(move_column)
         update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
                                       self._depth, self.player_num)
+        # print(self._game_tree)
 
         return move_column
 
@@ -183,7 +230,7 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
 
     elif d == 0:
         # Reaches maximum search depth, score the current situation
-        score = score_game_state(game_state, get_opposite_player(last_player))
+        score = score_game_state(game_state, initial_player)
         return GameTree(root_move, initial_player, last_player, score=score)
 
     else:
@@ -282,7 +329,8 @@ def _score_slice(grid_slice: list[int], player: int) -> int:
         score_so_far += 10
     elif player_count == 2 and unoccupied_count == 2:
         score_so_far += 5
-
+    elif opponent_count == 4:
+        score_so_far -= 90
     elif opponent_count == 3 and unoccupied_count == 1:
         score_so_far -= 80
     elif opponent_count == 2 and unoccupied_count == 2:
@@ -291,52 +339,65 @@ def _score_slice(grid_slice: list[int], player: int) -> int:
     return score_so_far
 
 
-def pick_best_column(game_state: ConnectFour, player_number: int) -> int:
-    """
-    # TODO: could make this a new AI class
-    """
-    best_score = -10000
-
-    valid_columns = game_state.get_possible_columns()
-    best_col = random.choice(valid_columns)
-
-    for col in valid_columns:
-        # position = connect_four.get_move_position_by_column(col)
-        # row = position[0]
-        new_game_state = game_state.copy_and_record_player_move(col)
-        score = score_game_state(new_game_state, player_number)
-        if score > best_score:
-            best_score = score
-            best_col = col
-
-    return best_col
-
-
 if __name__ == '__main__':
-    connect_four = ConnectFour()
+    stats_so_far = [0, 0]
 
-    first_player = input('Who goes first? Please type AI or Human:')
-    if first_player == 'AI':
-        AI_player = AIPlayer(PLAYER_ONE, 5, None)
-        second_player = 'Human'
-    else:
-        AI_player = AIPlayer(PLAYER_TWO, 5, None)
-        second_player = 'AI'
+    for i in range(100):
+        # first_player = ScoringPlayer(PLAYER_ONE)
+        second_player = GreedyPlayer(PLAYER_TWO, 3, None)
+        first_player = GreedyPlayer(PLAYER_ONE, 5, None)
+        # second_player = RandomPlayer(PLAYER_TWO)
+        current_player = first_player
 
-    current_player = first_player
+        connect_four = ConnectFour()
+        while connect_four.get_winner() is None:
 
-    while connect_four.get_winner() is None:
-        if current_player == 'Human':
-            player_move = eval(input('Please choose column:'))
-            connect_four.record_player_move(player_move)
-            current_player = 'AI'
+            move_column = current_player.choose_column(connect_four)
+            connect_four.record_player_move(move_column)
+            # print(connect_four)
+
+            if current_player == first_player:
+                current_player = second_player
+            else:
+                current_player = first_player
+
+        winner = connect_four.get_winner()
+        if winner == PLAYER_ONE:
+            stats_so_far[0] += 1
+            print(f'{i + 1}th game, Player one wins.')
+        elif winner == PLAYER_TWO:
+            stats_so_far[1] += 1
+            print(f'{i + 1}th game, Player two wins.')
         else:
-            print('AI is thinking...')
-            connect_four.record_player_move(AI_player.choose_column(connect_four))
-            current_player = 'Human'
+            print(f'{i + 1}th game, tie.')
         print(connect_four)
 
-    if connect_four.get_winner() == PLAYER_ONE:
-        print(first_player + ' wins!')
-    else:
-        print(second_player + ' wins!')
+    print(f'Player one wins {stats_so_far[0]} times. Player two wins {stats_so_far[1]} times.')
+
+    # Uncomment the following code to play against Greedy AI in console
+
+    # first_player = input('Who goes first? Please type AI or Human:')
+    # if first_player == 'AI':
+    #     AI_player = GreedyPlayer(PLAYER_ONE, 5, None)
+    #     second_player = 'Human'
+    # else:
+    #     AI_player = GreedyPlayer(PLAYER_TWO, 5, None)
+    #     second_player = 'AI'
+    #
+    # current_player = first_player
+    #
+    # while connect_four.get_winner() is None:
+    #     if current_player == 'Human':
+    #         player_move = eval(input('Please choose column:'))
+    #         connect_four.record_player_move(player_move)
+    #         current_player = 'AI'
+    #     else:
+    #         print('AI is thinking...')
+    #         connect_four.record_player_move(AI_player.choose_column(connect_four))
+    #         current_player = 'Human'
+    #     print(connect_four)
+    #
+    # if connect_four.get_winner() == PLAYER_ONE:
+    #     print(first_player + ' wins!')
+    # else:
+    #     print(second_player + ' wins!')
