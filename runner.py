@@ -1,5 +1,24 @@
-"""
-# TODO
+"""CSC111 Winter 2023 Project: Connect 4 (Runner)
+
+Module Description
+==================
+
+This module contains a main class GameRunner which represents the manipulation of the game
+that runs in the pygame interface, with two functions run_game_interactive() and
+run_game_between_ai() that represent two different types of runners.
+By reading the *docstring* of this file, you can gain insights into the
+role and functionality of this class and functions
+as well as how they contribute to this project as a whole.
+
+Copyright and Usage Information
+===============================
+
+This file is provided solely for the personal and private use of the
+Teaching Stream of CSC111 at the University of Toronto St. George campus.
+All forms of distribution of this code, whether as given or with any changes, are
+expressly prohibited.
+
+This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from typing import Optional
 import pygame

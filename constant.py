@@ -1,5 +1,21 @@
-"""
-# TODO
+"""CSC111 Winter 2023 Project: Connect 4 (Constant)
+
+Module Description
+==================
+
+This module contains all the constants defined that are essential for implementing
+the Connect 4 game. These are the constants defined for all the functions we created
+including the implementation of the game itself and the pygame interface.
+
+Copyright and Usage Information
+===============================
+
+This file is provided solely for the personal and private use of the
+Teaching Stream of CSC111 at the University of Toronto St. George campus.
+All forms of distribution of this code, whether as given or with any changes, are
+expressly prohibited.
+
+This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 import pygame
 
