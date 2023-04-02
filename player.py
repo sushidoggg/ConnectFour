@@ -326,13 +326,13 @@ def _score_slice(grid_slice: list[int], player: int) -> int:
     if player_count == 4:
         score_so_far += 100
     elif player_count == 3 and unoccupied_count == 1:
-        score_so_far += 10
+        score_so_far += 80
     elif player_count == 2 and unoccupied_count == 2:
         score_so_far += 5
     elif opponent_count == 4:
         score_so_far -= 90
     elif opponent_count == 3 and unoccupied_count == 1:
-        score_so_far -= 80
+        score_so_far -= 60
     elif opponent_count == 2 and unoccupied_count == 2:
         score_so_far -= 8
 
@@ -340,13 +340,15 @@ def _score_slice(grid_slice: list[int], player: int) -> int:
 
 
 if __name__ == '__main__':
-    stats_so_far = [0, 0]
+    stats_so_far = [0, 0, 0]
 
     for i in range(100):
-        # first_player = ScoringPlayer(PLAYER_ONE)
-        second_player = GreedyPlayer(PLAYER_TWO, 3, None)
+        # first_player = GreedyPlayer(PLAYER_ONE, 3, None)
+        # second_player = GreedyPlayer(PLAYER_TWO, 5, None)
+        # second_player = GreedyPlayer(PLAYER_TWO, 3, None)
         first_player = GreedyPlayer(PLAYER_ONE, 5, None)
-        # second_player = RandomPlayer(PLAYER_TWO)
+        second_player = ScoringPlayer(PLAYER_TWO)
+
         current_player = first_player
 
         connect_four = ConnectFour()
@@ -369,10 +371,12 @@ if __name__ == '__main__':
             stats_so_far[1] += 1
             print(f'{i + 1}th game, Player two wins.')
         else:
+            stats_so_far[2] += 1
             print(f'{i + 1}th game, tie.')
         print(connect_four)
 
-    print(f'Player one wins {stats_so_far[0]} times. Player two wins {stats_so_far[1]} times.')
+        print(f'Player one wins {stats_so_far[0]} times. Player two wins {stats_so_far[1]} times. Game ties '
+              f'{stats_so_far[2]} times.')
 
     # Uncomment the following code to play against Greedy AI in console
 
