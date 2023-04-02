@@ -62,7 +62,7 @@ class ConnectFour:
         self.grid = [[UNOCCUPIED] * GRID_WIDTH for _ in range(GRID_HEIGHT)]
         self.player_one_moves = []
         self.player_two_moves = []
-        self._possible_columns = [i for i in range(GRID_WIDTH)]
+        self._possible_columns = list(range(GRID_WIDTH))
         self._winner = None
 
     def __str__(self) -> str:
@@ -232,11 +232,13 @@ class ConnectFour:
         new_game._winner = self._winner
         return new_game
 
-    def get_move_position_by_column(self, move_column: int) -> tuple[int, int]:
+    def get_move_position_by_column(self, move_column: int) -> Optional[tuple[int, int]]:
         """ Find the position of a disc in the grid if it is placed at move_column.
 
         The returned tuple is in the form of (x, y) where x is the horizontal position and y is
         the vertical position. In other words, self.grid[y][x] is the corresponding position.
+
+        Return None if move_column is an invalid input.
 
         The purpose of distinguishing between move_position and move_column is to make sure that
         players don't make invalid moves. Players only need choose a column in each move and the disc
@@ -249,6 +251,7 @@ class ConnectFour:
         for y in range(GRID_HEIGHT):
             if self.grid[y][move_column] == UNOCCUPIED:
                 return (move_column, y)
+        return None
 
     def get_last_move(self) -> tuple[int, tuple[int, int]] | None:
         """ Get the last move of the state.
@@ -299,3 +302,10 @@ def get_opposite_player(player: int) -> int:
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['__future__', 'typing', 'random', 'connect_four', 'game_tree', 'constant'],
+    })

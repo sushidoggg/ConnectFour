@@ -1,6 +1,7 @@
 """
 # TODO
 """
+from typing import Optional
 import pygame
 from connect_four import ConnectFour
 from player import RandomPlayer, GreedyPlayer, ScoringPlayer
@@ -13,16 +14,34 @@ from constant import GAME_NOT_STARTED, GAMING, GAME_OVER, UNOCCUPIED, PLAYER_ONE
 class GameRunner:
     """
     ...
+    It has a lot of instance attributes, but we believe that they are all necessary for running such
+    a large game. We tried to make the names readable and easy to understand. We also maded sure that
+    the methods are neat and understandable.
     """
+    game_status: int
+    game: ConnectFour
+    ai_player: Optional[GreedyPlayer]
+    ai_search_depth: int
+    user_goes_first: Optional[bool]
+    _winner: Optional[int]
+    _me_first_button: Button
+    _ai_first_button: Button
+    _hint_button: Button
+    _restart_button: Button
+    _game_board: GameBoard
+    _hover_disc: Disc
+    _legend: list[Disc | Label]
+    _notice_label: Label
+    _win_label: Label
+
     def __init__(self, ai_search_depth: int) -> None:
         """
         # TODO
         """
         self.game_status = GAME_NOT_STARTED
-
         self.game = ConnectFour()
-        self._AI_player = None
-        self.AI_search_depth = ai_search_depth
+        self.ai_player = None
+        self.ai_search_depth = ai_search_depth
         self.user_goes_first = None
         self._winner = None
 
@@ -30,7 +49,6 @@ class GameRunner:
         self._ai_first_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
         self._hint_button = Button(x=10 * SQUARESIZE, y=6 * SQUARESIZE, word='HINT')
         self._restart_button = Button(x=10 * SQUARESIZE, y=8 * SQUARESIZE, word='RESTART')
-        self._buttons = [self._me_first_button, self._ai_first_button, self._hint_button, self._restart_button]
         self._game_board = GameBoard(SQUARESIZE, 2 * SQUARESIZE)
         self._update_disabled()
 
@@ -38,25 +56,27 @@ class GameRunner:
 
         player_one_disc = Disc(int(SQUARESIZE * 2.5), (2 + GRID_WIDTH) * SQUARESIZE, PLAYER_ONE)
         player_two_disc = Disc(int(SQUARESIZE * 6.5), (2 + GRID_WIDTH) * SQUARESIZE, PLAYER_TWO)
-        player_one_label = Label(int(SQUARESIZE * 2.5), int((2.5 + GRID_WIDTH) * SQUARESIZE), 'Player One',
-                                 FONT_WORDS, BLACK)
-        player_two_label = Label(int(SQUARESIZE * 6.5), int((2.5 + GRID_WIDTH) * SQUARESIZE), 'Player Two',
-                                 FONT_WORDS, BLACK)
+        player_one_label = Label((int(SQUARESIZE * 2.5), int((2.5 + GRID_WIDTH) * SQUARESIZE)), 'Player One',
+                                 (FONT_WORDS, BLACK))
+        player_two_label = Label((int(SQUARESIZE * 6.5), int((2.5 + GRID_WIDTH) * SQUARESIZE)), 'Player Two',
+                                 (FONT_WORDS, BLACK))
         self._legend = [player_one_disc, player_two_disc, player_one_label, player_two_label]
 
-        self._notice_label = Label(SQUARESIZE, SQUARESIZE, 'Choose if you want to go first or last!',
-                                   FONT_WORDS, BLACK, align='left')
-        self._win_label = Label(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - int(0.5 * SQUARESIZE), '', FONT_WIN_STATUS,
-                                BLACK, visible=False, background_rect=pygame.Rect(0, WINDOW_HEIGHT // 2 - SQUARESIZE,
-                                                                                  WINDOW_WIDTH, SQUARESIZE),
-                                background_color=LIGHT_BLUE)
+        self._notice_label = Label((SQUARESIZE, SQUARESIZE), 'Choose if you want to go first or last!',
+                                   (FONT_WORDS, BLACK))
+        self._win_label = Label((WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - int(0.5 * SQUARESIZE)), '',
+                                (FONT_WIN_STATUS, BLACK),
+                                background=(pygame.Rect(0, WINDOW_HEIGHT // 2 - SQUARESIZE, WINDOW_WIDTH, SQUARESIZE),
+                                            LIGHT_BLUE))
+        self._notice_label.align = 'left'
+        self._win_label.visible = False
 
     def draw(self, surface: pygame.Surface) -> None:
         """
         # TODO
         """
         surface.fill(WHITE)
-        for button in self._buttons:
+        for button in [self._me_first_button, self._ai_first_button, self._hint_button, self._restart_button]:
             button.draw(surface)
         for legend in self._legend:
             legend.draw(surface)
@@ -135,10 +155,10 @@ class GameRunner:
         ...
         """
         if first_player == 'User':
-            self.AI_player = GreedyPlayer(PLAYER_TWO, self.AI_search_depth, None)
+            self.ai_player = GreedyPlayer(PLAYER_TWO, self.ai_search_depth, None)
             self.user_goes_first = True
         elif first_player == 'AI':
-            self.AI_player = GreedyPlayer(PLAYER_ONE, self.AI_search_depth, None)
+            self.ai_player = GreedyPlayer(PLAYER_ONE, self.ai_search_depth, None)
             self.user_goes_first = False
 
         self.game_status = GAMING
@@ -149,7 +169,7 @@ class GameRunner:
         """
         ...
         """
-        hint_column = self.AI_player.hint_opponent(self.game)
+        hint_column = self.ai_player.hint_opponent(self.game)
         hint_position = self.game.get_move_position_by_column(hint_column)
         self._game_board.record_move(hint_position, HINT)
 
@@ -158,7 +178,7 @@ class GameRunner:
         ...
         """
         self.game = ConnectFour()
-        self.AI_player = None
+        self.ai_player = None
         self.user_goes_first = None
         self._winner = None
         self.game_status = GAME_NOT_STARTED
@@ -172,7 +192,7 @@ class GameRunner:
         """
         ...
         """
-        ai_move_column = self.AI_player.choose_column(self.game)
+        ai_move_column = self.ai_player.choose_column(self.game)
         self._record_move(ai_move_column, 'AI')
 
     def _user_makes_move(self, mouse_position: tuple[int, int]) -> bool:
@@ -219,7 +239,7 @@ class GameRunner:
         self.game_status = GAME_OVER
         if self._winner == UNOCCUPIED:
             self._win_label.update_text('TIE!')
-        elif self._winner == self.AI_player.player_num:
+        elif self._winner == self.ai_player.player_num:
             self._win_label.update_text('AI Wins!')
         else:
             self._win_label.update_text('You Win!')
@@ -269,3 +289,11 @@ def run_game_between_ai() -> None:
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['typing', 'pygame', 'connect_four', 'player', 'interface', 'constant'],
+        'disable': ['no-member', 'too-many-instance-attributes'],
+    })
