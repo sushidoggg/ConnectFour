@@ -250,7 +250,7 @@ class GameRunner:
 
     def _update_disabled(self) -> None:
         """
-        # TODO
+        update the four buttons disabled attribute and gameboard's disabled attribute according to self.game_status
         """
         if self.game_status == GAME_NOT_STARTED:
             self._me_first_button.disabled = False
