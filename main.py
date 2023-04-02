@@ -76,7 +76,7 @@ while True:
 
         if go_first_button.is_valid(position, screen):
             user_go_first = True
-    
+
             AI_player = GreedyPlayer(PLAYER_TWO, 5, None)
             # AI_player = ScoringPlayer(PLAYER_TWO)
         else:
