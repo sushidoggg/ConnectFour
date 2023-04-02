@@ -343,11 +343,12 @@ if __name__ == '__main__':
     stats_so_far = [0, 0, 0]
 
     for i in range(100):
-        # first_player = GreedyPlayer(PLAYER_ONE, 3, None)
-        # second_player = GreedyPlayer(PLAYER_TWO, 5, None)
+        first_player = GreedyPlayer(PLAYER_ONE, 4, None)
+        second_player = GreedyPlayer(PLAYER_TWO, 5, None)
         # second_player = GreedyPlayer(PLAYER_TWO, 3, None)
-        first_player = GreedyPlayer(PLAYER_ONE, 5, None)
-        second_player = ScoringPlayer(PLAYER_TWO)
+
+        #first_player = GreedyPlayer(PLAYER_ONE, 5, None)
+        #second_player = ScoringPlayer(PLAYER_TWO)
 
         current_player = first_player
 
