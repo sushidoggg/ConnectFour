@@ -14,34 +14,36 @@ expressly prohibited.
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
 from __future__ import annotations
+from typing import Optional
 import pygame
 from pygame import gfxdraw
-import time
 from connect_four import ConnectFour
 
 AI_RESPONSE_TIME = 50
-UNOCCUPIED, PLAYER_ONE, PLAYER_TWO = -1, 0, 1
-ROW_COUNT, COLUMN_COUNT = 6, 7
+UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT = -1, 0, 1, 2
+GRID_WIDTH, GRID_HEIGHT = 7, 6
+
 SQUARESIZE = 70
 RADIUS = int(SQUARESIZE / 3.5)
+
 WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
 SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 BORDER_RADIUS = int(SQUARESIZE / 3.5)
-pygame.init()
-BUTTOM_COLUMN_WIDTH = ...
-COLOR_PLAYER_ONE, COLOR_PLAYER_TWO = (255, 71, 71), (255, 196, 0)
-BLUE, WHITE, BLACK = (65, 108, 234), (255, 255, 255), (0, 0, 0)
-BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5) , int(SQUARESIZE * 0.7)
-DISABLE_COLOR = (192, 192, 192)  # Grey
-BUTTON_COLOR = BLUE
 
+RED, YELLOW = (255, 71, 71), (255, 196, 0)
+DARK_RED, DARK_YELLOW = (178, 49, 49), (178, 137, 0)
+BLUE, WHITE, BLACK, GREY = (65, 108, 234), (255, 255, 255), (0, 0, 0), (192, 192, 192)
+LIGHT_BLUE, DARK_BLUE, DARK_GREY = (97, 162, 255), (45, 75, 163), (134, 134, 134)
+BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5), int(SQUARESIZE * 0.7)
+
+pygame.init()
 FONT_WORDS = pygame.font.SysFont("Courier", int(SQUARESIZE/3))
 FONT_WIN_STATUS = pygame.font.SysFont("Courier", int(SQUARESIZE/1.5))
 FONT_SIZE = int(SQUARESIZE / 2.5)
 FONT_BUTTON = pygame.font.Font(None, FONT_SIZE)
 
 
-class Button():
+class Button:
     """A class represents a circle buttons.
     Instance Attributes:
         - disabled: show that if the button should be disactivated, this attribute needs to be changed manually
@@ -51,236 +53,264 @@ class Button():
     word: str
     center: tuple[int, int]
     disabled: bool
+    _button_color: tuple[int, int, int]
+    _darker_button_color: tuple[int, int, int]
+    _disabled_color: tuple[int, int, int]
+
     def __init__(self, x: int, y: int, word: str) -> None:
         """Create a rectangular button of given image at (x, y)
-        x, y are the topleft location of the button on a screen.
-        image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT in the same ratio"""
+        x, y are the topleft location of the button on a surface.
+        image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT
+        in the same ratio
+        """
         self.center = (x, y)
         self.word = word
         self.disabled = False
 
-    def draw(self, window: pygame.Surface) -> None:
+        self._button_color = BLUE
+        self._darker_button_color = DARK_BLUE
+        self._disabled_color = GREY
+
+    def draw(self, surface: pygame.Surface) -> None:
         """Draw the button with words on it on the given window.
-        It doesn't update screen in this function"""
+        It doesn't update surface in this function."""
+
         # draw a rectangle
         topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
         topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
+
+        if self.disabled:
+            filled_color, outline_color = self._disabled_color, self._disabled_color
+        else:
+            filled_color, outline_color = self._button_color, self._darker_button_color
+
         # draw the outer Rect
-        darker = (int(BUTTON_COLOR[0] * 0.7), int(BUTTON_COLOR[1] * 0.7), int(BUTTON_COLOR[2] * 0.7))
-        draw_rounded_rect(window, pygame.Rect(topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), darker, \
-                          BORDER_RADIUS)
+        draw_rounded_rect(surface, pygame.Rect(topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT),
+                          outline_color, BORDER_RADIUS)
         # draw the inner Rect
-        draw_rounded_rect(window, pygame.Rect(topleft_x + int(BUTTON_WIDTH * 0.05), topleft_y + int(BUTTON_WIDTH * 0.05), \
-                          int(BUTTON_WIDTH * 0.9), int(0.85 * BUTTON_HEIGHT)), BUTTON_COLOR, int(BORDER_RADIUS * 0.8))
+        draw_rounded_rect(surface, pygame.Rect(topleft_x + int(BUTTON_WIDTH * 0.05),
+                                               topleft_y + int(BUTTON_WIDTH * 0.05),
+                          int(BUTTON_WIDTH * 0.9), int(0.85 * BUTTON_HEIGHT)),
+                          filled_color, int(BORDER_RADIUS * 0.8))
+
         # draw word
         text = FONT_BUTTON.render(self.word, True, WHITE)
         w, h = text.get_size()
-        text_x = int(self.center[0] - w / 2)
-        text_y = int(self.center[1] - h / 2)
-        window.blit(text, (text_x, text_y))
+        text_x, text_y = int(self.center[0] - w / 2), int(self.center[1] - h / 2)
+        surface.blit(text, (text_x, text_y))
 
-    def show_disabled(self, window: pygame.Surface) -> None:
-        """Make the button to a grey color
-        It doesn't update screen in this function
-        self.disabled doesn't have to be True
-        """
-        # draw a rectangle
-        topleft_x = int(self.center[0] - BUTTON_WIDTH / 2)
-        topleft_y = int(self.center[1] - BUTTON_HEIGHT / 2)
-        pygame.draw.rect(window, DISABLE_COLOR, (topleft_x, topleft_y, BUTTON_WIDTH, BUTTON_HEIGHT), border_radius=BORDER_RADIUS)
-        # draw word
-        text = FONT_BUTTON.render(self.word, True, BLACK)
-        w, h = text.get_size()
-        text_x = int(self.center[0] - w / 2)
-        text_y = int(self.center[1] - h / 2)
-        window.blit(text, (text_x, text_y))
-
-    def is_valid(self, position: tuple[int, int], window: pygame.Surface) -> bool:
+    def is_valid_click(self, position: tuple[int, int]) -> bool:
         """Return if the given position is on the position of the button
         Doesn't mutate self.disabled
         Precondition:
             - 0 <= position[0] <= WINDOW_WIDTH
             - 0 <= position[1] <= WINDOW_HEIGHT
         """
+        if self.disabled:
+            return False
+
         left, right = int(self.center[0] - BUTTON_WIDTH / 2), int(self.center[0] + BUTTON_WIDTH / 2)
         up, down = int(self.center[1] - BUTTON_HEIGHT / 2), int(self.center[1] + BUTTON_HEIGHT / 2)
         if left <= position[0] <= right and up <= position[1] <= down:
-            self.show_disabled(window)
-            pygame.display.update()
-            time.sleep(0.2)
-            self.draw(window)
-            pygame.display.update()
             return True
         else:
             return False
 
-    def reset_disabled(self, value: bool) -> None:
-        """Change self.disabled to the given boolean value"""
-        self.disabled = value
 
-def draw_rounded_rect(surface: pygame.Surface, rect: pygame.Rect, color: tuple[int, int, int], corner_radius: int) -> None:
-    ''' Draw an anti-aliased rectangle with rounded corners. We draw anti-aliased circles at the corners
+class GameBoard:
+    """
+    ...
+    """
+    x: int
+    y: int
+    _grid: list[list[Disc]]
+    _hint_position: Optional[tuple[int, int]]
+
+    def __init__(self, x: int, y: int) -> None:
+        """
+        ...
+        """
+        self.x, self.y = x, y
+        self._grid = []
+        for grid_y in range(GRID_HEIGHT):
+            row_so_far = []
+            for grid_x in range(GRID_WIDTH):
+                position_x, position_y = self._get_central_position(grid_x, grid_y)
+                row_so_far.append(Disc(position_x, position_y, UNOCCUPIED))
+            self._grid.append(row_so_far)
+        self._hint_position = None
+
+    def _get_central_position(self, grid_x: int, grid_y: int) -> tuple[int, int]:
+        """
+        # TODO
+        """
+        position_x = int(self.x + (grid_x + 0.5) * SQUARESIZE)
+        position_y = int(self.y + (grid_y + 0.5) * SQUARESIZE)
+        return (position_x, position_y)
+
+    def draw(self, surface: pygame.Surface) -> None:
+        """
+        ...
+        """
+        board_rect = pygame.Rect(self.x, self.y, GRID_WIDTH * SQUARESIZE, GRID_HEIGHT * SQUARESIZE)
+        draw_rounded_rect(surface, board_rect, BLUE, BORDER_RADIUS)
+
+        for y in range(GRID_HEIGHT):
+            for x in range(GRID_WIDTH):
+                self._grid[y][x].draw(surface)
+
+    def is_valid_click(self, position: tuple[int, int]) -> bool:
+        """
+        ...
+        """
+        position_x, position_y = position
+        return self.x <= position_x <= self.x + SQUARESIZE * GRID_WIDTH and \
+            self.y <= position_y <= self.y + SQUARESIZE * GRID_HEIGHT
+
+    def get_move_column(self, position: tuple[int, int]) -> int:
+        """
+        ...
+        """
+        return (position[0] - self.x) // SQUARESIZE
+
+    def record_move(self, move_position: tuple[int, int], disc_type) -> None:
+        """
+        ...
+        """
+        x, y = move_position
+        y = GRID_HEIGHT - 1 - y     # TODO
+        self._grid[y][x].update_color_and_type(disc_type)
+        if disc_type == HINT:
+            self._hint_position = (x, y)
+
+    def remove_hint(self) -> None:
+        """
+        ...
+        """
+        if self._hint_position is not None:
+            x, y = self._hint_position
+            self._grid[y][x].update_color_and_type(UNOCCUPIED)
+
+
+class Disc:
+    """
+    ...
+    """
+    x: int
+    y: int
+    disc_type: int
+    filled_color: tuple[int, int, int]
+    outline_color: tuple[int, int, int]
+
+    def __init__(self, x: int, y: int, disc_type: int) -> None:
+        """
+        ...
+        """
+        self.x, self.y = x, y
+        self.update_color_and_type(disc_type)
+
+    def draw(self, surface: pygame.Surface) -> None:
+        """
+        ...
+        """
+        draw_circle(surface, self.x, self.y, RADIUS, self.outline_color)
+        draw_circle(surface, self.x, self.y, int(RADIUS * 4 / 5), self.filled_color)
+
+    def update_color_and_type(self, disc_type) -> None:
+        """
+        ...
+        """
+        self.disc_type = disc_type
+        if self.disc_type == UNOCCUPIED:
+            self.filled_color, self.outline_color = WHITE, WHITE
+        elif self.disc_type == PLAYER_ONE:
+            self.filled_color, self.outline_color = RED, DARK_RED
+        elif self.disc_type == PLAYER_TWO:
+            self.filled_color, self.outline_color = YELLOW, DARK_YELLOW
+        else:
+            self.filled_color, self.outline_color = GREY, DARK_GREY
+
+
+class Label:
+    """
+    ...
+    """
+    x: int
+    y: int
+    text: pygame.Surface
+    font: pygame.font.Font
+    color: tuple[int, int, int]
+    visible: bool
+    background_rect: Optional[pygame.Rect]
+    background_color: Optional[tuple[int, int, int]]
+    align: str
+
+    def __init__(self, x: int, y: int, text: str, font: pygame.font.Font, color: tuple[int, int, int],
+                 background_rect: Optional[pygame.Rect] = None,
+                 background_color: Optional[tuple[int, int, int]] = None, visible: bool = True,
+                 align: str = 'center') -> None:
+        """
+        ...
+        """
+        self.x, self.y = x, y   # Center x, Center y
+        self.font, self.color = font, color
+        self.update_text(text)
+        self.visible = visible
+        self.background_rect, self.background_color = background_rect, background_color
+        self.align = align
+
+    def draw(self, surface: pygame.Surface) -> None:
+        """
+        ...
+        """
+        if not self.visible:
+            return
+        if self.background_rect is not None:
+            pygame.draw.rect(surface, self.background_color, self.background_rect)
+
+        if self.align == 'center':
+            text_rect = self.text.get_rect(center=(self.x, self.y))
+            surface.blit(self.text, text_rect)
+        elif self.align == 'left':
+            surface.blit(self.text, (self.x, self.y))
+
+    def update_text(self, text: str) -> None:
+        """
+        ...
+        """
+        self.text = self.font.render(text, True, self.color)
+
+
+def draw_circle(surface, x, y, radius, color) -> None:
+    """
+    Draw an anti-aliased circle at the position (x, y) given the radius and color
+    """
+    gfxdraw.aacircle(surface, x, y, radius, color)
+    gfxdraw.filled_circle(surface, x, y, radius, color)
+
+
+def draw_rounded_rect(surface: pygame.Surface, rect: pygame.Rect, color: tuple[int, int, int], corner_radius: int) -> \
+        None:
+    """Draw an anti-aliased rectangle with rounded corners. We draw anti-aliased circles at the corners
     Would prefer this:
         pygame.draw.rect(surface, color, rect, border_radius=corner_radius)
-    '''
+    """
     # draw four anti aliasing circles to smooth the corners
     # top left
-    pygame.gfxdraw.aacircle(surface, rect.left + corner_radius, rect.top + corner_radius, corner_radius, color)
-    pygame.gfxdraw.filled_circle(surface, rect.left + corner_radius, rect.top + corner_radius, corner_radius, color)
+    draw_circle(surface, rect.left + corner_radius, rect.top + corner_radius, corner_radius, color)
     # top right
-    pygame.gfxdraw.aacircle(surface, rect.right - corner_radius - 1, rect.top + corner_radius, corner_radius, color)
-    pygame.gfxdraw.filled_circle(surface, rect.right - corner_radius - 1, rect.top + corner_radius, corner_radius, color)
+    draw_circle(surface, rect.right - corner_radius - 1, rect.top + corner_radius, corner_radius, color)
     # bottom left
-    pygame.gfxdraw.aacircle(surface, rect.left + corner_radius, rect.bottom - corner_radius - 1, corner_radius, color)
-    pygame.gfxdraw.filled_circle(surface, rect.left + corner_radius, rect.bottom - corner_radius - 1, corner_radius, color)
+    draw_circle(surface, rect.left + corner_radius, rect.bottom - corner_radius - 1, corner_radius, color)
     # bottom right
-    pygame.gfxdraw.aacircle(surface, rect.right - corner_radius - 1, rect.bottom - corner_radius - 1, corner_radius, color)
-    pygame.gfxdraw.filled_circle(surface, rect.right - corner_radius - 1, rect.bottom - corner_radius - 1, corner_radius, color)
+    draw_circle(surface, rect.right - corner_radius - 1, rect.bottom - corner_radius - 1, corner_radius, color)
 
     rect_tmp = pygame.Rect(rect)
     rect_tmp.width -= 2 * corner_radius
     rect_tmp.center = rect.center
     pygame.draw.rect(surface, color, rect_tmp)
+
     rect_tmp.width = rect.width
     rect_tmp.height -= 2 * corner_radius
     rect_tmp.center = rect.center
     pygame.draw.rect(surface, color, rect_tmp)
-
-def draw_hint_disc(window: pygame.Surface, col: int, game: ConnectFour):
-    # draw_one_dics and flipped
-    x = int(SQUARESIZE * (1 + col) + SQUARESIZE / 2)
-    # find the first row with column = col,
-    col, row = game.get_move_position_by_column(col)  # row is from bottom to top
-    y = int((ROW_COUNT - row + 2) * SQUARESIZE - SQUARESIZE / 2)
-    draw_one_disc(window, DISABLE_COLOR, (x, y))
-    pygame.display.update()
-    # draw_one_disc(window, WHITE, (x, y))
-    # pygame.display.update()
-    # draw_one_disc(window, DISABLE_COLOR, (x, y))
-    # pygame.display.update()
-
-def draw_one_disc(window: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int]) -> None:
-    """Draw a beautiful disc on window at the given window with given color
-        The disc has two layers, color is its inner/base color; a darker color is its outer color
-        Preconditions:
-            - 0 <= center[0] <= WINDOW_WIDTH and 0 <= center[1] <= WINDOW_HEIGHT
-    """
-    darker = (int(color[0] * 0.7), int(color[1] * 0.7), int(color[2] * 0.7))
-    pygame.gfxdraw.aacircle(window, center[0], center[1], RADIUS, darker)
-    pygame.gfxdraw.filled_circle(window, center[0], center[1], RADIUS, darker)
-    # pygame.draw.circle(window, color, (center[0], center[1]), RADIUS)
-    pygame.gfxdraw.aacircle(window, center[0], center[1], int(RADIUS * 4 / 5), color)
-    pygame.gfxdraw.filled_circle(window, center[0], center[1], int(RADIUS * 4 / 5), color)
-    # create a darker color and draw the outer circle of the disc
-
-    # pygame.draw.circle(window, darker, (center[0], center[1]), RADIUS, int(RADIUS / 4))
-
-
-def draw_window(window: pygame.Surface, game: ConnectFour, buttons: list[Button]) -> None:
-    """ Based on the given sqaure size, draw the whole interface on the given window at the current status of game
-        If game.grid are all unoccupied, then just draw the window.
-        game.grid record the bottom row first, top row last. Wherease on pygame, the location of top row has smallest
-        y-value and the location of bottom row has greatest y-value. i.e. game.grid[y][x] == pygame's board [ROW_COLUMN - 1 - y][x]
-    """
-    window.fill(WHITE)
-    grid = game.grid
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT):
-            # four corners: c=0 r=0, c=COLUMN_COUNT-1 r=0,
-            if c == 0 and r == 0:
-                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_top_left_radius=BORDER_RADIUS)
-            elif c == COLUMN_COUNT - 1 and r == 0:
-                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_top_right_radius=BORDER_RADIUS)
-            elif c == 0 and r == ROW_COUNT - 1:
-                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_bottom_left_radius=BORDER_RADIUS)
-            elif c == COLUMN_COUNT - 1 and r == ROW_COUNT - 1:
-                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE), border_bottom_right_radius=BORDER_RADIUS)
-            else:
-                pygame.draw.rect(window, BLUE, ((c + 1) * SQUARESIZE, (r + 2) * SQUARESIZE, SQUARESIZE, SQUARESIZE))
-            #pygame.draw.circle(window, WHITE, (
-            #    int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2)), RADIUS)
-            pygame.gfxdraw.aacircle(window, int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2), RADIUS, WHITE)
-            pygame.gfxdraw.filled_circle(window, int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2), RADIUS, WHITE)
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT):
-            if grid[ROW_COUNT - 1 - r][c] == PLAYER_TWO:  # Player Two's disc
-                center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
-                draw_one_disc(window, COLOR_PLAYER_TWO, center)
-            elif grid[ROW_COUNT - 1 - r][c] == PLAYER_ONE:  # Player One's disc
-                center = (int((c + 1) * SQUARESIZE + SQUARESIZE / 2), int((r + 2) * SQUARESIZE + SQUARESIZE / 2))
-                draw_one_disc(window, COLOR_PLAYER_ONE, center)
-    # draw the buttons:
-    for button in buttons:
-        if button.disabled is True:
-            button.show_disabled(window)
-        else:
-            button.draw(window)
-    # draw player one and its button and player two and its button
-    draw_one_disc(window, COLOR_PLAYER_ONE, (int(SQUARESIZE * 2.5), (2 + COLUMN_COUNT) * SQUARESIZE))
-    draw_one_disc(window, COLOR_PLAYER_TWO, (int(SQUARESIZE * 6.5), (2 + COLUMN_COUNT) * SQUARESIZE))
-
-    text1 = FONT_WORDS.render('player one', True, BLACK)
-    text2 = FONT_WORDS.render('player two', True, BLACK)
-    width, height = text2.get_size()
-    window.blit(text1, (int(SQUARESIZE * 2.5 - width / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
-    window.blit(text2, (int(SQUARESIZE * 6.6 - width / 2), int((2 + COLUMN_COUNT + 0.5) * SQUARESIZE)))
-    pygame.display.update()
-
-def print_win(screen: pygame.Surface, word: str) -> None:
-    """ Draw a horizontal line on the middle of the screen with the word in the middle
-    There should be three possible situations: word in [ties, you win, ai win]
-    No pygame.display.updated() is called in this function
-    """
-    rec = pygame.draw.rect(screen, (255, 0, 0), pygame.Rect(0, int(WINDOW_HEIGHT / 2 - SQUARESIZE), WINDOW_WIDTH, SQUARESIZE), 2)
-    screen.fill((min(int(BLUE[0] * 1.5), 255), min(int(BLUE[1] * 1.5), 255), min(int(BLUE[2] * 1.5), 255)), rec)
-
-    text = FONT_WIN_STATUS.render(word, True, BLACK)
-    text_rect = text.get_rect(center=(SIZE[0] / 2, SIZE[1] / 2 - SQUARESIZE/2))
-    screen.blit(text, text_rect)
-
-def drop_piece(game: ConnectFour, col: int) -> None:
-    """
-    Represent the player's move on the board.
-    """
-    # board[row][col] = piece
-    game.record_player_move(col)
-
-
-def is_valid_location(game: ConnectFour, col: int) -> bool:
-    """
-    Return if the current column is a valid column.
-    """
-    # return board[ROW_COUNT - 1][col] == -1
-    return col in game.get_possible_columns()
-
-
-# def get_next_open_row(game: ConnectFour, col: int) -> int:
-#     """
-#     Get the next avaible row position for the current column.
-#     """
-#     # for r in range(ROW_COUNT):
-#     #     if board[r][col] == -1:
-#     #         return r
-#     return game.get_move_position_by_column(col)[0]
-
-
-
-
-if __name__ == '__main__':
-    # 模拟main里面的window
-    pygame.init()
-    window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    window.fill((0,0,0))
-    pygame.display.set_caption("Connect Four")
-    pygame.display.flip()
-    # b1 = Button(100, 100, "Heelo")
-    # b1.draw(window)
-
-
-    draw_rounded_rect(window, pygame.Rect(100, 100, 50, 60), BLUE, 10)
-    pygame.display.update()
-    # main while loop
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
