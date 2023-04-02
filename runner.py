@@ -1,11 +1,13 @@
-"""CSC111 Winter 2023 Project: Connect 4 (Main)
+"""CSC111 Winter 2023 Project: Connect 4 (Runner)
 
 Module Description
 ==================
 
-This module contains the codes that are necessary to run the entire program from start to finish.
-By reading the codes of this file, you can gain insights into the
-role and functionality of these codes
+This module contains a main class GameRunner which represents the manipulation of the game
+that runs in the pygame interface, with two functions run_game_interactive() and
+run_game_between_ai() that represent two different types of runners.
+By reading the *docstring* of this file, you can gain insights into the
+role and functionality of this class and functions
 as well as how they contribute to this project as a whole.
 
 Copyright and Usage Information
@@ -15,27 +17,16 @@ This file is provided solely for the personal and private use of the
 Teaching Stream of CSC111 at the University of Toronto St. George campus.
 All forms of distribution of this code, whether as given or with any changes, are
 expressly prohibited.
+
 This file is Copyright (c) 2023 Yige (Amanda) Wu, Sunyi (Alysa) Liu, Lecheng (Joyce) Qu, and Xi (Olivia) Yan.
 """
-from __future__ import annotations
-
-import sys
-import math
 import pygame
-from typing import Optional
-
-from player import RandomPlayer, GreedyPlayer, ScoringPlayer
-
-from interface import Button, GameBoard, Disc, Label, \
-    RED, DARK_RED, YELLOW, DARK_YELLOW, BLUE, LIGHT_BLUE, DARK_BLUE, GREY, DARK_GREY, BLACK, WHITE, \
-    GRID_WIDTH, GRID_HEIGHT, SQUARESIZE, \
-    UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT, \
-    WINDOW_WIDTH, WINDOW_HEIGHT, \
-    SIZE, FONT_WORDS, FONT_WIN_STATUS
-
 from connect_four import ConnectFour
-
-GAME_NOT_STARTED, GAMING, GAME_OVER = -1, 0, 1
+from player import RandomPlayer, GreedyPlayer, ScoringPlayer
+from interface import Button, GameBoard, Disc, Label
+from constant import GAME_NOT_STARTED, GAMING, GAME_OVER, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT, \
+    SQUARESIZE, GRID_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT, \
+    FONT_WORDS, FONT_WIN_STATUS, BLACK, LIGHT_BLUE, WHITE
 
 
 class GameRunner:
@@ -52,15 +43,16 @@ class GameRunner:
         self._AI_player = None
         self.AI_search_depth = ai_search_depth
         self.user_goes_first = None
+        self._winner = None
 
         self._me_first_button = Button(x=10 * SQUARESIZE, y=2 * SQUARESIZE, word='I go first')
         self._ai_first_button = Button(x=10 * SQUARESIZE, y=4 * SQUARESIZE, word='AI go first')
         self._hint_button = Button(x=10 * SQUARESIZE, y=6 * SQUARESIZE, word='HINT')
         self._restart_button = Button(x=10 * SQUARESIZE, y=8 * SQUARESIZE, word='RESTART')
         self._buttons = [self._me_first_button, self._ai_first_button, self._hint_button, self._restart_button]
-        self._update_buttons_disabled()
-
         self._game_board = GameBoard(SQUARESIZE, 2 * SQUARESIZE)
+        self._update_disabled()
+
         self._hover_disc = Disc(SQUARESIZE, int(1.5 * SQUARESIZE), UNOCCUPIED)
 
         player_one_disc = Disc(int(SQUARESIZE * 2.5), (2 + GRID_WIDTH) * SQUARESIZE, PLAYER_ONE)
@@ -103,93 +95,44 @@ class GameRunner:
             self._handle_mouse_motion(pygame_event.pos)
 
     def _handle_mouse_button_up(self, position: tuple[int, int], surface: pygame.Surface) -> None:
-        if self.game_status == GAME_NOT_STARTED:
-            if not (self._me_first_button.is_valid_click(position)) and \
-                    not (self._ai_first_button.is_valid_click(position)):
-                return
+        """
+        ...
+        """
+        # Press button to chooe who goes first
+        if self._me_first_button.is_valid_click(position):
+            self._start_gaming('User')
 
-            if self._me_first_button.is_valid_click(position):
-                self.AI_player = GreedyPlayer(PLAYER_TWO, self.AI_search_depth, None)
-                self.user_goes_first = True
-            else:
-                self.AI_player = GreedyPlayer(PLAYER_ONE, self.AI_search_depth, None)
-                self.user_goes_first = False
-
-            self.game_status = GAMING
-            self._update_buttons_disabled()
-            self._notice_label.update_text('')
-
+        elif self._ai_first_button.is_valid_click(position):
+            self._start_gaming('AI')
             # AI makes the first move
-            if not self.user_goes_first:
-                move_column = self.AI_player.choose_column(self.game)
-                move_position = self.game.get_move_position_by_column(move_column)
-                self._game_board.record_move(move_position, PLAYER_ONE)
-                self.game.record_player_move(move_column)
+            self.draw(surface)
+            self._ai_makes_move()
 
-        elif self.game_status == GAMING:
-            # Press hint button
-            if self._hint_button.is_valid_click(position):
-                hint_column = self.AI_player.hint_opponent(self.game)
-                hint_position = self.game.get_move_position_by_column(hint_column)
-                self._game_board.record_move(hint_position, HINT)
+        # Press hint button
+        elif self._hint_button.is_valid_click(position):
+            self._hint()
+
+        # Press restart button
+        elif self._restart_button.is_valid_click(position):
+            self._restart()
+
+        # Clicks on the game board
+        elif self._game_board.is_valid_click(position):
+
+            # User makes move
+            if not self._user_makes_move(position):
+                # The move is not valid (i.e., the chosen column is full).
                 return
 
-            elif self._restart_button.is_valid_click(position):
-                self._restart()
-                return
+            # Draw user's move first, because AI takes some time to make move
+            self.draw(surface)
+            if not self._game_over():
+                # AI makes move if player doesn't win
+                self._ai_makes_move()
 
-            # User make move
-            elif self._game_board.is_valid_click(position) is not None:
-                self._game_board.remove_hint()
-                user_move_column = self._game_board.get_move_column(position)
-                if user_move_column not in self.game.get_possible_columns():
-                    self._notice_label.update_text('Choose another column!')
-                    return
-
-                self._notice_label.update_text('')
-                move_position = self.game.get_move_position_by_column(user_move_column)
-                if self.user_goes_first:
-                    disc_type = PLAYER_ONE
-                else:
-                    disc_type = PLAYER_TWO
-                self._game_board.record_move(move_position, disc_type)
-                self.game.record_player_move(user_move_column)
-
-                self._hover_disc.update_color_and_type(UNOCCUPIED)
-                self.draw(surface)
-
-            winner = self.game.get_winner()
-            if winner is None:
-                # AI makes move
-                ai_move_column = self.AI_player.choose_column(self.game)
-                move_position = self.game.get_move_position_by_column(ai_move_column)
-                if self.user_goes_first:
-                    disc_type = PLAYER_TWO
-                else:
-                    disc_type = PLAYER_ONE
-                self._game_board.record_move(move_position, disc_type)
-                self.game.record_player_move(ai_move_column)
-
-            winner = self.game.get_winner()
-            if winner is None:
-                return
-
-            # Winner exists. Game over.
-            self.game_status = GAME_OVER
-            if winner == UNOCCUPIED:
-                self._win_label.update_text('TIE!')
-            elif winner == self.AI_player.player_num:
-                self._win_label.update_text('AI Wins!')
-            else:
-                self._win_label.update_text('You Win!')
-            self._win_label.visible = True
-            self._update_buttons_disabled()
-            self._notice_label.update_text('Press Restart for a new game!')
-            self._hover_disc.update_color_and_type(UNOCCUPIED)
-
-        elif self.game_status == GAME_OVER:
-            if self._restart_button.is_valid_click(position):
-                self._restart()
+            # Handle game over case
+            if self._game_over():
+                self._show_winner()
 
     def _handle_mouse_motion(self, position: tuple[int, int]) -> None:
         """
@@ -206,6 +149,29 @@ class GameRunner:
                 self._hover_disc.update_color_and_type(PLAYER_TWO)
             self._hover_disc.x = x
 
+    def _start_gaming(self, first_player: str) -> None:
+        """
+        ...
+        """
+        if first_player == 'User':
+            self.AI_player = GreedyPlayer(PLAYER_TWO, self.AI_search_depth, None)
+            self.user_goes_first = True
+        elif first_player == 'AI':
+            self.AI_player = GreedyPlayer(PLAYER_ONE, self.AI_search_depth, None)
+            self.user_goes_first = False
+
+        self.game_status = GAMING
+        self._update_disabled()
+        self._notice_label.update_text('')
+
+    def _hint(self) -> None:
+        """
+        ...
+        """
+        hint_column = self.AI_player.hint_opponent(self.game)
+        hint_position = self.game.get_move_position_by_column(hint_column)
+        self._game_board.record_move(hint_position, HINT)
+
     def _restart(self) -> None:
         """
         ...
@@ -213,14 +179,75 @@ class GameRunner:
         self.game = ConnectFour()
         self.AI_player = None
         self.user_goes_first = None
+        self._winner = None
         self.game_status = GAME_NOT_STARTED
-        self._update_buttons_disabled()
+        self._update_disabled()
         self._notice_label.update_text('Choose if you want to go first or last!')
         self._win_label.visible = False
         self._game_board = GameBoard(SQUARESIZE, 2 * SQUARESIZE)
         self._hover_disc = Disc(SQUARESIZE, int(1.5 * SQUARESIZE), UNOCCUPIED)
 
-    def _update_buttons_disabled(self) -> None:
+    def _ai_makes_move(self) -> None:
+        """
+        ...
+        """
+        ai_move_column = self.AI_player.choose_column(self.game)
+        self._record_move(ai_move_column, 'AI')
+
+    def _user_makes_move(self, mouse_position: tuple[int, int]) -> bool:
+        """
+        ...
+        """
+        self._game_board.remove_hint()
+        user_move_column = self._game_board.get_move_column(mouse_position)
+        if user_move_column not in self.game.get_possible_columns():
+            # User didn't select a valid move column
+            self._notice_label.update_text('Choose another column!')
+            return False
+
+        self._notice_label.update_text('')
+        self._record_move(user_move_column, 'User')
+        self._hover_disc.update_color_and_type(UNOCCUPIED)
+        return True
+
+    def _record_move(self, move_column: int, player_type: str) -> None:
+        """
+        ...
+        """
+        if (player_type == 'User' and self.user_goes_first) or (player_type == 'AI' and not self.user_goes_first):
+            disc_type = PLAYER_ONE
+        else:
+            disc_type = PLAYER_TWO
+        move_position = self.game.get_move_position_by_column(move_column)
+        self._game_board.record_move(move_position, disc_type)
+        self.game.record_player_move(move_column)
+
+    def _game_over(self) -> bool:
+        """
+        ...
+        """
+        self._winner = self.game.get_winner()
+        if self._winner is None:
+            return False
+        return True
+
+    def _show_winner(self) -> None:
+        """
+        ...
+        """
+        self.game_status = GAME_OVER
+        if self._winner == UNOCCUPIED:
+            self._win_label.update_text('TIE!')
+        elif self._winner == self.AI_player.player_num:
+            self._win_label.update_text('AI Wins!')
+        else:
+            self._win_label.update_text('You Win!')
+        self._win_label.visible = True
+        self._update_disabled()
+        self._notice_label.update_text('Press Restart for a new game!')
+        self._hover_disc.update_color_and_type(UNOCCUPIED)
+
+    def _update_disabled(self) -> None:
         """
         # TODO
         """
@@ -229,37 +256,35 @@ class GameRunner:
             self._ai_first_button.disabled = False
             self._hint_button.disabled = True
             self._restart_button.disabled = False
+            self._game_board.disabled = True
         elif self.game_status == GAMING:
             self._me_first_button.disabled = True
             self._ai_first_button.disabled = True
             self._hint_button.disabled = False
             self._restart_button.disabled = False
+            self._game_board.disabled = False
         elif self.game_status == GAME_OVER:
             self._me_first_button.disabled = True
             self._ai_first_button.disabled = True
             self._hint_button.disabled = True
             self._restart_button.disabled = False
+            self._game_board.disabled = True
+
+
+def run_game_interactive() -> None:
+    """
+    ...
+    """
+    ...
+
+
+def run_game_between_ai() -> None:
+    """
+    ...
+    """
+    ...
 
 
 if __name__ == '__main__':
-
-    pygame.init()  # pygame needs to be initialized before defining FONT
-    screen = pygame.display.set_mode(SIZE)
-    pygame.display.flip()
-    pygame.display.set_caption("CONNECT FOUR")
-    clock = pygame.time.Clock()
-
-    game_runner = GameRunner(5)
-
-    # draw_window(screen, ConnectFour(), game_runner.buttons)
-
-    while True:
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            game_runner.handle_event(event, screen)
-
-        game_runner.draw(screen)
-        pygame.display.update()
-        clock.tick(50)
+    import doctest
+    doctest.testmod(verbose=True)

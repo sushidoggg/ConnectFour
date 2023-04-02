@@ -3,9 +3,11 @@
 Module Description
 ==================
 
-This module contains a GameTree class of the game Connect 4 with a collections of functions
-defined under the class. By reading the *docstring* of this file, you can gain insights into the
-role and functionality of this class and functions as well as how they contribute to this project as a whole.
+This module contains a GameTree class of the game Connect 4
+with a collection of functions defined under the class.
+By reading the *docstring* of this file, you can gain insights into the
+role and functionality of this class and functions
+as well as how they contribute to this project as a whole.
 
 Copyright and Usage Information
 ===============================

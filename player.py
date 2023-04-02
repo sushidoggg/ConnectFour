@@ -5,7 +5,7 @@ Module Description
 
 This module contains a collection of Python classes and functions that
 represent the game of Connect 4.
-This file contains classes including Player, RandomPlayer and AIPlayer
+This file contains classes including Player, RandomPlayer, ScoringPlayer, and GreedyPlayer
 with associated functions defined under each class.
 By reading the *docstring* of this file, you can gain insights into the
 role and functionality of these classes and functions
