@@ -25,12 +25,11 @@ which is also Copyright (c) 2023 Mario Badr, David Liu, and Angela Zavaleta Bern
 """
 
 from __future__ import annotations
-
-import math
-import random
 from typing import Optional
+import random
+from connect_four import ConnectFour, get_opposite_player
 from game_tree import GameTree, GAME_START_MOVE
-from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, get_opposite_player
+from constant import UNOCCUPIED, PLAYER_ONE, GRID_WIDTH, GRID_HEIGHT
 
 
 class Player:
@@ -48,12 +47,12 @@ class Player:
         """
         self.player_num = player_num
 
-    def choose_column(self, game_state: ConnectFour) -> int:
+    def choose_column(self, game: ConnectFour) -> int:
         """ Return a chosen column of grid given the current game state.
         """
         raise NotImplementedError
 
-    def hint_opponent(self, game_state: ConnectFour) -> int:
+    def hint_opponent(self, game: ConnectFour) -> int:
         """ Return a chosen column of grid given the current game state.
         """
         raise NotImplementedError
@@ -63,16 +62,16 @@ class RandomPlayer(Player):
     """ A player that performs randomly by selecting one of the possible moves at random.
     """
 
-    def choose_column(self, game_state: ConnectFour) -> int:
+    def choose_column(self, game: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
-        possible_columns = game_state.get_possible_columns()
+        possible_columns = game.get_possible_columns()
         return random.choice(possible_columns)
 
-    def hint_opponent(self, game_state: ConnectFour) -> int:
+    def hint_opponent(self, game: ConnectFour) -> int:
         """ Return a randomly chosen column from all possible columns.
         """
-        possible_columns = game_state.get_possible_columns()
+        possible_columns = game.get_possible_columns()
         return random.choice(possible_columns)
 
 
@@ -80,41 +79,41 @@ class ScoringPlayer(Player):
     """
     # TODO
     """
-    def choose_column(self, game_state: ConnectFour) -> int:
+    def choose_column(self, game: ConnectFour) -> int:
         """ Return a chosen column from all possible columns.
         """
-        possible_columns = game_state.get_possible_columns()
+        possible_columns = game.get_possible_columns()
         best_column_so_far = possible_columns[0]
 
-        new_game_state = game_state.copy_and_record_player_move(best_column_so_far)
-        best_score_so_far = score_game_state(new_game_state, self.player_num)
+        new_game = game.copy_and_record_player_move(best_column_so_far)
+        best_score_so_far = score_game(new_game, self.player_num, True)
 
         for i in range(1, len(possible_columns)):
             column = possible_columns[i]
-            new_game_state = game_state.copy_and_record_player_move(column)
+            new_game = game.copy_and_record_player_move(column)
 
-            score = score_game_state(new_game_state, self.player_num)
+            score = score_game(new_game, self.player_num, True)
             if score > best_score_so_far:
                 best_score_so_far = score
                 best_column_so_far = column
 
         return best_column_so_far
 
-    def hint_opponent(self, game_state: ConnectFour) -> int:
+    def hint_opponent(self, game: ConnectFour) -> int:
         """ Return a chosen column from all possible columns.
         """
         opponent = get_opposite_player(self.player_num)
-        possible_columns = game_state.get_possible_columns()
+        possible_columns = game.get_possible_columns()
         best_column_so_far = possible_columns[0]
 
-        new_game_state = game_state.copy_and_record_player_move(best_column_so_far)
-        best_score_so_far = score_game_state(new_game_state, opponent)
+        new_game = game.copy_and_record_player_move(best_column_so_far)
+        best_score_so_far = score_game(new_game, opponent, True)
 
         for i in range(1, len(possible_columns)):
             column = possible_columns[i]
-            new_game_state = game_state.copy_and_record_player_move(column)
+            new_game = game.copy_and_record_player_move(column)
 
-            score = score_game_state(new_game_state, opponent)
+            score = score_game(new_game, opponent, True)
             if score > best_score_so_far:
                 best_score_so_far = score
                 best_column_so_far = column
@@ -126,8 +125,8 @@ class GreedyPlayer(Player):
     """
     # TODO
     """
+    depth: int
     _game_tree: GameTree | None
-    _depth: int
 
     def __init__(self, player_num: int, search_depth: int, game_tree: Optional[GameTree]) -> None:
         """
@@ -141,7 +140,7 @@ class GreedyPlayer(Player):
             self._game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, ConnectFour(), search_depth,
                                                               self.player_num)
 
-        self._depth = search_depth
+        self.depth = search_depth
 
     def choose_column(self, game: ConnectFour) -> int:
         """
@@ -154,7 +153,7 @@ class GreedyPlayer(Player):
             move_column = GRID_WIDTH // 2
             self._game_tree = self._game_tree.get_subtree_by_column(move_column)
             update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
-                                          self._depth, self.player_num)
+                                          self.depth, self.player_num)
             return move_column
 
         last_move_column = last_move[1][0]
@@ -177,7 +176,7 @@ class GreedyPlayer(Player):
         move_column = random.choice(max_score_tree).move_column
         self._game_tree = self._game_tree.get_subtree_by_column(move_column)
         update_complete_tree_to_depth(self._game_tree, game.copy_and_record_player_move(move_column),
-                                      self._depth, self.player_num)
+                                      self.depth, self.player_num)
         # print(self._game_tree)
 
         return move_column
@@ -205,7 +204,7 @@ class GreedyPlayer(Player):
         return random.choice(min_score_tree).move_column
 
 
-def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFour, d: int,
+def generate_complete_tree_to_depth(root_move: str | int, game: ConnectFour, d: int,
                                     initial_player: int) -> GameTree:
     """ Returns a complete game tree to the depth d.
 
@@ -214,15 +213,15 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
     - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
     # TODO: some more preconditions?
     """
-    current_player = game_state.get_current_player()
+    current_player = game.get_current_player()
     last_player = get_opposite_player(current_player)
     # Last player made the root_move. Current player will choose bewteen moves in subtrees
 
-    if game_state.get_winner() is not None:
+    if game.get_winner() is not None:
         # A winner already exists
-        if game_state.get_winner() == initial_player:
+        if game.get_winner() == initial_player:
             return GameTree(root_move, initial_player, last_player, score=1000)
-        elif game_state.get_winner() == get_opposite_player(initial_player):
+        elif game.get_winner() == get_opposite_player(initial_player):
             return GameTree(root_move, initial_player, last_player, score=-500)
         else:
             # Game draws, so score = 0
@@ -230,22 +229,25 @@ def generate_complete_tree_to_depth(root_move: str | int, game_state: ConnectFou
 
     elif d == 0:
         # Reaches maximum search depth, score the current situation
-        score = score_game_state(game_state, initial_player)
+        if initial_player == last_player:
+            score = score_game(game, initial_player, False)
+        else:
+            score = score_game(game, initial_player, True)
         return GameTree(root_move, initial_player, last_player, score=score)
 
     else:
         game_tree = GameTree(root_move, initial_player, last_player, score=0)
 
-        possible_columns = game_state.get_possible_columns()
+        possible_columns = game.get_possible_columns()
         for column in possible_columns:
-            new_game_state = game_state.copy_and_record_player_move(column)
-            subtree = generate_complete_tree_to_depth(column, new_game_state, d - 1, initial_player)
+            new_game = game.copy_and_record_player_move(column)
+            subtree = generate_complete_tree_to_depth(column, new_game, d - 1, initial_player)
             game_tree.add_subtree(subtree)
 
         return game_tree
 
 
-def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, d: int, initial_player: int) -> None:
+def update_complete_tree_to_depth(game_tree: GameTree, game: ConnectFour, d: int, initial_player: int) -> None:
     """ Returns a complete game tree to the depth d.
 
     Preconditions:
@@ -253,67 +255,83 @@ def update_complete_tree_to_depth(game_tree: GameTree, game_state: ConnectFour, 
     - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
     # TODO: some more preconditions?
     """
-    # FIXME: d == 0  should be treated differently, but how?
 
     if not game_tree.get_subtrees():
         # game_tree is a leaf
-        if game_state.get_winner() is None and d >= 0:
+        current_player = game.get_current_player()
+        last_player = get_opposite_player(current_player)
 
-            possible_columns = game_state.get_possible_columns()
+        if game.get_winner() is not None:
+            if game.get_winner() == initial_player:
+                game_tree.score = 1000
+            elif game.get_winner() == get_opposite_player(initial_player):
+                game_tree.score = -500
+            else:
+                # Game draws, so score = 0
+                game_tree.score = 0
+
+        elif d == 0:
+            if initial_player == last_player:
+                game_tree.score = score_game(game, initial_player, False)
+            else:
+                game_tree.score = score_game(game, initial_player, True)
+
+        elif d > 0:
+            possible_columns = game.get_possible_columns()
             for column in possible_columns:
-                new_game_state = game_state.copy_and_record_player_move(column)
-                subtree = generate_complete_tree_to_depth(column, new_game_state, d - 1, initial_player)
+                new_game = game.copy_and_record_player_move(column)
+                subtree = generate_complete_tree_to_depth(column, new_game, d - 1, initial_player)
                 game_tree.add_subtree(subtree)
 
     else:
         # Recurse into next level
         for subtree in game_tree.get_subtrees():
-            new_game_state = game_state.copy_and_record_player_move(subtree.move_column)
-            update_complete_tree_to_depth(subtree, new_game_state, d - 1, initial_player)
+            new_game = game.copy_and_record_player_move(subtree.move_column)
+            update_complete_tree_to_depth(subtree, new_game, d - 1, initial_player)
         game_tree.update_score()
 
 
-def score_game_state(game_state: ConnectFour, player: int) -> int:
+def score_game(game: ConnectFour, player: int, is_moving_next: bool) -> int:
     """
     # TODO
     """
     score_so_far = 0
 
     # Score center column
-    center_array = [row[GRID_WIDTH // 2] for row in game_state.grid]
+    center_array = [row[GRID_WIDTH // 2] for row in game.grid]
     center_count = center_array.count(player)
     score_so_far += 6 * center_count
 
     # Score horizontal
     for r in range(GRID_HEIGHT):
-        row_array = game_state.grid[r]
+        row_array = game.grid[r]
         for c in range(GRID_WIDTH - 3):
             grid_slice = row_array[c: c + 4]
-            score_so_far += _score_slice(grid_slice, player)
+            score_so_far += _score_slice(grid_slice, player, is_moving_next)
 
     # Score vertical
     for c in range(GRID_WIDTH):
-        column_array = [row[c] for row in game_state.grid]
+        column_array = [row[c] for row in game.grid]
         for r in range(GRID_HEIGHT - 3):
             grid_slice = column_array[r: r + 4]
-            score_so_far += _score_slice(grid_slice, player)
+            score_so_far += _score_slice(grid_slice, player, is_moving_next)
 
     # Score positive sloped diagonal
     for r in range(GRID_HEIGHT - 3):
         for c in range(GRID_WIDTH - 3):
-            grid_slice = [game_state.grid[r + i][c + i] for i in range(4)]
-            score_so_far += _score_slice(grid_slice, player)
+            grid_slice = [game.grid[r + i][c + i] for i in range(4)]
+            score_so_far += _score_slice(grid_slice, player, is_moving_next)
 
     # Score negative sloped diagonal
     for r in range(GRID_HEIGHT - 3):
         for c in range(GRID_WIDTH - 3):
-            grid_slice = [game_state.grid[r + 3 - i][c + i] for i in range(4)]
-            score_so_far += _score_slice(grid_slice, player)
+            grid_slice = [game.grid[r + 3 - i][c + i] for i in range(4)]
+            score_so_far += _score_slice(grid_slice, player, is_moving_next)
 
     return score_so_far
 
 
-def _score_slice(grid_slice: list[int], player: int) -> int:
+def _score_slice(grid_slice: list[int], player: int, is_moving_next: bool) -> int:
     """
     TODO
     """
@@ -325,84 +343,38 @@ def _score_slice(grid_slice: list[int], player: int) -> int:
 
     if player_count == 4:
         score_so_far += 100
-    elif player_count == 3 and unoccupied_count == 1:
-        score_so_far += 80
-    elif player_count == 2 and unoccupied_count == 2:
-        score_so_far += 5
     elif opponent_count == 4:
-        score_so_far -= 90
-    elif opponent_count == 3 and unoccupied_count == 1:
-        score_so_far -= 60
-    elif opponent_count == 2 and unoccupied_count == 2:
-        score_so_far -= 8
+        score_so_far -= 100
+
+    if is_moving_next:
+        if player_count == 3 and unoccupied_count == 1:
+            score_so_far += 90
+        elif player_count == 2 and unoccupied_count == 2:
+            score_so_far += 8
+        elif opponent_count == 3 and unoccupied_count == 1:
+            score_so_far -= 60
+        elif opponent_count == 2 and unoccupied_count == 2:
+            score_so_far -= 5
+    else:
+        if player_count == 3 and unoccupied_count == 1:
+            score_so_far += 60
+        elif player_count == 2 and unoccupied_count == 2:
+            score_so_far += 5
+        elif opponent_count == 3 and unoccupied_count == 1:
+            score_so_far -= 90
+        elif opponent_count == 2 and unoccupied_count == 2:
+            score_so_far -= 8
 
     return score_so_far
 
 
 if __name__ == '__main__':
-    stats_so_far = [0, 0, 0]
+    import doctest
+    doctest.testmod(verbose=True)
 
-    for i in range(100):
-        first_player = GreedyPlayer(PLAYER_ONE, 4, None)
-        second_player = GreedyPlayer(PLAYER_TWO, 5, None)
-        # second_player = GreedyPlayer(PLAYER_TWO, 3, None)
-
-        #first_player = GreedyPlayer(PLAYER_ONE, 5, None)
-        #second_player = ScoringPlayer(PLAYER_TWO)
-
-        current_player = first_player
-
-        connect_four = ConnectFour()
-        while connect_four.get_winner() is None:
-
-            move_column = current_player.choose_column(connect_four)
-            connect_four.record_player_move(move_column)
-            # print(connect_four)
-
-            if current_player == first_player:
-                current_player = second_player
-            else:
-                current_player = first_player
-
-        winner = connect_four.get_winner()
-        if winner == PLAYER_ONE:
-            stats_so_far[0] += 1
-            print(f'{i + 1}th game, Player one wins.')
-        elif winner == PLAYER_TWO:
-            stats_so_far[1] += 1
-            print(f'{i + 1}th game, Player two wins.')
-        else:
-            stats_so_far[2] += 1
-            print(f'{i + 1}th game, tie.')
-        print(connect_four)
-
-        print(f'Player one wins {stats_so_far[0]} times. Player two wins {stats_so_far[1]} times. Game ties '
-              f'{stats_so_far[2]} times.')
-
-    # Uncomment the following code to play against Greedy AI in console
-
-    # first_player = input('Who goes first? Please type AI or Human:')
-    # if first_player == 'AI':
-    #     AI_player = GreedyPlayer(PLAYER_ONE, 5, None)
-    #     second_player = 'Human'
-    # else:
-    #     AI_player = GreedyPlayer(PLAYER_TWO, 5, None)
-    #     second_player = 'AI'
-    #
-    # current_player = first_player
-    #
-    # while connect_four.get_winner() is None:
-    #     if current_player == 'Human':
-    #         player_move = eval(input('Please choose column:'))
-    #         connect_four.record_player_move(player_move)
-    #         current_player = 'AI'
-    #     else:
-    #         print('AI is thinking...')
-    #         connect_four.record_player_move(AI_player.choose_column(connect_four))
-    #         current_player = 'Human'
-    #     print(connect_four)
-    #
-    # if connect_four.get_winner() == PLAYER_ONE:
-    #     print(first_player + ' wins!')
-    # else:
-    #     print(second_player + ' wins!')
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['__future__', 'typing', 'random', 'connect_four', 'game_tree', 'constant'],
+    })

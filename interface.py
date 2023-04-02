@@ -23,30 +23,10 @@ from __future__ import annotations
 from typing import Optional
 import pygame
 from pygame import gfxdraw
-from connect_four import ConnectFour
-
-AI_RESPONSE_TIME = 50
-UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT = -1, 0, 1, 2
-GRID_WIDTH, GRID_HEIGHT = 7, 6
-
-SQUARESIZE = 70
-RADIUS = int(SQUARESIZE / 3.5)
-
-WINDOW_WIDTH, WINDOW_HEIGHT = SQUARESIZE * 11, SQUARESIZE * 11
-SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
-BORDER_RADIUS = int(SQUARESIZE / 3.5)
-
-RED, YELLOW = (255, 71, 71), (255, 196, 0)
-DARK_RED, DARK_YELLOW = (178, 49, 49), (178, 137, 0)
-BLUE, WHITE, BLACK, GREY = (65, 108, 234), (255, 255, 255), (0, 0, 0), (192, 192, 192)
-LIGHT_BLUE, DARK_BLUE, DARK_GREY = (97, 162, 255), (45, 75, 163), (134, 134, 134)
-BUTTON_WIDTH, BUTTON_HEIGHT = int(SQUARESIZE * 1.5), int(SQUARESIZE * 0.7)
-
-pygame.init()
-FONT_WORDS = pygame.font.SysFont("Courier", int(SQUARESIZE/3))
-FONT_WIN_STATUS = pygame.font.SysFont("Courier", int(SQUARESIZE/1.5))
-FONT_SIZE = int(SQUARESIZE / 2.5)
-FONT_BUTTON = pygame.font.Font(None, FONT_SIZE)
+from constant import UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT, \
+    GRID_WIDTH, GRID_HEIGHT, SQUARESIZE, RADIUS, BORDER_RADIUS, \
+    BUTTON_WIDTH, BUTTON_HEIGHT, FONT_BUTTON, \
+    RED, DARK_RED, YELLOW, DARK_YELLOW, BLUE, DARK_BLUE, WHITE, GREY, DARK_GREY
 
 
 class Button:
@@ -129,15 +109,17 @@ class GameBoard:
     """
     x: int
     y: int
+    disabled: bool
     _grid: list[list[Disc]]
     _hint_position: Optional[tuple[int, int]]
 
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int, y: int, disabled: bool = True) -> None:
         """
         ...
         """
         self.x, self.y = x, y
         self._grid = []
+        self.disabled = disabled
         for grid_y in range(GRID_HEIGHT):
             row_so_far = []
             for grid_x in range(GRID_WIDTH):
@@ -169,6 +151,9 @@ class GameBoard:
         """
         ...
         """
+        if self.disabled:
+            return False
+
         position_x, position_y = position
         return self.x <= position_x <= self.x + SQUARESIZE * GRID_WIDTH and \
             self.y <= position_y <= self.y + SQUARESIZE * GRID_HEIGHT
@@ -179,7 +164,7 @@ class GameBoard:
         """
         return (position[0] - self.x) // SQUARESIZE
 
-    def record_move(self, move_position: tuple[int, int], disc_type) -> None:
+    def record_move(self, move_position: tuple[int, int], disc_type: int) -> None:
         """
         ...
         """
@@ -195,7 +180,9 @@ class GameBoard:
         """
         if self._hint_position is not None:
             x, y = self._hint_position
-            self._grid[y][x].update_color_and_type(UNOCCUPIED)
+            if self._grid[y][x].disc_type == HINT:
+                self._grid[y][x].update_color_and_type(UNOCCUPIED)
+            self._hint_position = None
 
 
 class Disc:
@@ -222,7 +209,7 @@ class Disc:
         draw_circle(surface, self.x, self.y, RADIUS, self.outline_color)
         draw_circle(surface, self.x, self.y, int(RADIUS * 4 / 5), self.filled_color)
 
-    def update_color_and_type(self, disc_type) -> None:
+    def update_color_and_type(self, disc_type: int) -> None:
         """
         ...
         """
@@ -241,29 +228,25 @@ class Label:
     """
     ...
     """
-    x: int
-    y: int
+    position: tuple[int, int]
     text: pygame.Surface
     font: pygame.font.Font
     color: tuple[int, int, int]
+    background: Optional[tuple[pygame.Rect, tuple[int, int, int]]]
     visible: bool
-    background_rect: Optional[pygame.Rect]
-    background_color: Optional[tuple[int, int, int]]
     align: str
 
-    def __init__(self, x: int, y: int, text: str, font: pygame.font.Font, color: tuple[int, int, int],
-                 background_rect: Optional[pygame.Rect] = None,
-                 background_color: Optional[tuple[int, int, int]] = None, visible: bool = True,
-                 align: str = 'center') -> None:
+    def __init__(self, position: tuple[int, int], text: str, text_style: tuple[pygame.font.Font, tuple[int, int, int]],
+                 background: Optional[tuple[pygame.Rect, tuple[int, int, int]]] = None) -> None:
         """
         ...
         """
-        self.x, self.y = x, y   # Center x, Center y
-        self.font, self.color = font, color
+        self.position = position
+        self.font, self.color = text_style
         self.update_text(text)
-        self.visible = visible
-        self.background_rect, self.background_color = background_rect, background_color
-        self.align = align
+        self.visible = True
+        self.background = background
+        self.align = 'center'
 
     def draw(self, surface: pygame.Surface) -> None:
         """
@@ -271,14 +254,15 @@ class Label:
         """
         if not self.visible:
             return
-        if self.background_rect is not None:
-            pygame.draw.rect(surface, self.background_color, self.background_rect)
+        if self.background is not None:
+            background_rect, background_color = self.background
+            pygame.draw.rect(surface, background_color, background_rect)
 
         if self.align == 'center':
-            text_rect = self.text.get_rect(center=(self.x, self.y))
+            text_rect = self.text.get_rect(center=self.position)
             surface.blit(self.text, text_rect)
         elif self.align == 'left':
-            surface.blit(self.text, (self.x, self.y))
+            surface.blit(self.text, self.position)
 
     def update_text(self, text: str) -> None:
         """
@@ -287,7 +271,7 @@ class Label:
         self.text = self.font.render(text, True, self.color)
 
 
-def draw_circle(surface, x, y, radius, color) -> None:
+def draw_circle(surface: pygame.Surface, x: int, y: int, radius: int, color: tuple[int, int, int]) -> None:
     """
     Draw an anti-aliased circle at the position (x, y) given the radius and color
     """
@@ -320,3 +304,15 @@ def draw_rounded_rect(surface: pygame.Surface, rect: pygame.Rect, color: tuple[i
     rect_tmp.height -= 2 * corner_radius
     rect_tmp.center = rect.center
     pygame.draw.rect(surface, color, rect_tmp)
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['__future__', 'typing', 'pygame', 'constant'],
+    })

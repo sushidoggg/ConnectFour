@@ -22,12 +22,9 @@ Additionally, this file references a2_game_tree.py from CSC111 Assignment 2,
 which is also Copyright (c) 2023 Mario Badr, David Liu, and Isaac Waller.
 """
 from __future__ import annotations
-
-import math
 from typing import Optional
-from connect_four import ConnectFour, UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT, get_opposite_player
-
-GAME_START_MOVE = "*"
+from constant import GAME_START_MOVE, PLAYER_ONE
+from connect_four import get_opposite_player
 
 
 class GameTree:
@@ -115,15 +112,7 @@ class GameTree:
         if self.move_column == GAME_START_MOVE:
             return PLAYER_ONE
         else:
-            return self._get_opposite_player()
-
-    def _get_opposite_player(self) -> int:
-        """Return the opposite player of self.player.
-
-        Since self.player is either 0 or 1 (PLAYER_ONE or PLAYER_TWO),
-        we can use the x = 1 - x method to get the other possible value.
-        """
-        return 1 - self.current_player
+            return get_opposite_player(self.current_player)
 
     def __len__(self) -> int:
         """Return the number of items in this tree."""
@@ -139,7 +128,7 @@ class GameTree:
         """
         if len(self._subtrees) == 0:
             # Do nothing when self is a leaf node
-            return None
+            return
 
         # Choose the maximum score among all subtrees and reverse it to be self's score.
         # TODO: Write a docstring and explain why
@@ -149,3 +138,15 @@ class GameTree:
         else:
             min_subtree_score = min(subtree.score for subtree in self.get_subtrees())
             self.score = min_subtree_score
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(verbose=True)
+
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['__future__', 'typing', 'connect_four', 'constant'],
+    })
