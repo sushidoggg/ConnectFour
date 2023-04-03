@@ -432,8 +432,8 @@ def _get_player_from_console(player_number: int) -> Player:
     else:
         print('Please enter a positive integer as the search depth of the Greedy Player.')
         search_depth = int(input('If the number is too large (>= 6), it may take a long time to compute a result.'))
-        while search_depth <= 0:
-            search_depth = int(input('Invalid input. Please enter an integer greater than 0.'))
+        while search_depth <= 1:
+            search_depth = int(input('Invalid input. Please enter an integer greater than 1.'))
         return GreedyPlayer(player_number, search_depth, None)
 
 
