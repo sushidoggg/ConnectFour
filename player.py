@@ -29,7 +29,7 @@ from typing import Optional
 import random
 from connect_four import ConnectFour, get_opposite_player
 from game_tree import GameTree, GAME_START_MOVE
-from constant import GRID_WIDTH, GRID_HEIGHT
+from constant import GRID_WIDTH, GRID_HEIGHT, PLAYER_ONE, PLAYER_TWO, UNOCCUPIED
 
 
 class Player:
@@ -326,13 +326,25 @@ def generate_complete_tree_to_depth(root_move: str | int, game: ConnectFour, d: 
 
 
 def update_complete_tree_to_depth(game_tree: GameTree, game: ConnectFour, d: int, initial_player: int) -> None:
-    """ Returns a complete game tree to the depth d.
+    """ Mutate game_tree to make it a complete game tree to the depth d.
+
+    If game_tree has no subtrees, generate subtrees to depth to fulfill the depth requirement.
+
+    If game_tree has subtrees, recurse into subtrees and update subtrees to depth d - 1.
+
+    Nothing will be changed if game_tree is already completed to depth d.
 
     Preconditions:
         - d >= 0
         - root_move == GAME_START_MOVE or 0 <= root_move < GRID_WIDTH
         - len(game.player_one_moves) == 0 or root_move != GAME_START_MOVE
         - initial_player in {PLAYER_ONE, PLAYER_TWO}
+
+    >>> game_tree = generate_complete_tree_to_depth(GAME_START_MOVE, ConnectFour(), 3, PLAYER_ONE)
+    >>> complete_length = len(game_tree)
+    >>> update_complete_tree_to_depth(game_tree, ConnectFour(), 3, PLAYER_ONE)
+    >>> complete_length == len(game_tree)
+    True
     """
 
     if not game_tree.get_subtrees():
@@ -441,6 +453,15 @@ def _score_slice(grid_slice: list[int], player: int, player_go_next: bool) -> in
     Preconditions:
         - len(grid_slice) = 4
         - player in {PLAYER_ONE, PLAYER_TWO}
+
+    >>> _score_slice([PLAYER_ONE, PLAYER_TWO, UNOCCUPIED, UNOCCUPIED], PLAYER_ONE, True)
+    0
+    >>> _score_slice([PLAYER_ONE, PLAYER_ONE, UNOCCUPIED, PLAYER_ONE], PLAYER_ONE, True)
+    90
+    >>> _score_slice([PLAYER_ONE, PLAYER_ONE, UNOCCUPIED, PLAYER_ONE], PLAYER_TWO, True)
+    -60
+    >>> _score_slice([UNOCCUPIED, PLAYER_ONE, UNOCCUPIED, PLAYER_ONE], PLAYER_ONE, False)
+    5
     """
 
     opponent = get_opposite_player(player)
@@ -467,8 +488,10 @@ if __name__ == '__main__':
     doctest.testmod(verbose=True)
 
     import python_ta
+    # Disabled 'unused-import' because these imported constants are used in doctests.
     python_ta.check_all(config={
         'max-line-length': 120,
         'max-nested-blocks': 4,
         'extra-imports': ['__future__', 'typing', 'random', 'connect_four', 'game_tree', 'constant'],
+        'disable': ['unused-import'],
     })

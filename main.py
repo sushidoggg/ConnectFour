@@ -28,6 +28,9 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
 
+    # Disabled 'unused-import' because you can use them by uncommenting some sections of code in main
+    # for different purposes.
+
     # import python_ta
     # python_ta.check_all(config={
     #     'max-line-length': 120,

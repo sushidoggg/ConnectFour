@@ -201,6 +201,10 @@ class GameRunner:
         """
         Uses first_player to update user_goes_first to the appropriate boolean value.
         Updates game_status to GAMING.
+
+        Preconditions:
+            - 0 <= move_column < 7
+            - first_player == 'User' or first_player == 'AI'
         """
         if first_player == 'User':
             self.ai_player = GreedyPlayer(PLAYER_TWO, self.ai_search_depth, None)
@@ -223,9 +227,7 @@ class GameRunner:
         self._game_board.record_move(hint_position, HINT)
 
     def _restart(self) -> None:
-        """
-        Reset the game to the condition same as when it started.
-        """
+        """ Reset the game to the condition same as when it started."""
         self.game = ConnectFour()
         self.ai_player = None
         self.user_goes_first = None
@@ -238,9 +240,7 @@ class GameRunner:
         self._hover_disc = Disc(SQUARESIZE, int(1.5 * SQUARESIZE), UNOCCUPIED)
 
     def _ai_makes_move(self) -> None:
-        """
-        Make AI a move and record the move on the game grid.
-        """
+        """Let the AI player make a move and record it."""
         ai_move_column = self.ai_player.choose_column(self.game)
         self._record_move(ai_move_column, 'AI')
 
@@ -264,6 +264,10 @@ class GameRunner:
     def _record_move(self, move_column: int, player_type: str) -> None:
         """
         Record a move for the given player_type at the appropriate position given move_column.
+
+        Preconditions:
+            - 0 <= move_column < 7
+            - player_type == 'User' or player_type == 'AI'
         """
         if (player_type == 'User' and self.user_goes_first) or (player_type == 'AI' and not self.user_goes_first):
             disc_type = PLAYER_ONE
@@ -283,8 +287,9 @@ class GameRunner:
         return True
 
     def _show_winner(self) -> None:
-        """
-        Display a lable showing the result of the game.
+        """ Display a lable showing the result of the game.
+
+        Update the game_status to GAME_OVER status.
         """
         self.game_status = GAME_OVER
         if self._winner == UNOCCUPIED:
@@ -300,7 +305,7 @@ class GameRunner:
 
     def _update_disabled(self) -> None:
         """
-        update the four buttons‘ disabled attribute and gameboard's disabled attribute according to self.game_status.
+        Update the four buttons‘ disabled attribute and gameboard's disabled attribute according to self.game_status.
         """
         if self.game_status == GAME_NOT_STARTED:
             self._me_first_button.disabled = False
@@ -370,16 +375,17 @@ def run_game_between_ai() -> None:
     game_number = int(input('How many games do you want to run?'))
     while game_number <= 0:
         game_number = int(input('Invalid input. Please enter a number greater than 0.'))
+
     stats_so_far = [0, 0, 0]
 
     print('Choose the first AI player.')
-    ai_first = _get_player_from_console(PLAYER_ONE)
-    ai_second = _get_player_from_console(PLAYER_TWO)
+    first_ai = _get_player_from_console(PLAYER_ONE)
+    second_ai = _get_player_from_console(PLAYER_TWO)
 
     for i in range(game_number):
         connect_four = ConnectFour()
-        first_player = _copy_player(ai_first)
-        second_player = _copy_player(ai_second)
+        first_player = first_ai.copy()
+        second_player = second_ai.copy()
         current_player = first_player
 
         while connect_four.get_winner() is None:
@@ -431,27 +437,15 @@ def _get_player_from_console(player_number: int) -> Player:
         return GreedyPlayer(player_number, search_depth, None)
 
 
-def _copy_player(player: Player) -> Player:
-    """
-    Return a copy of player.
-    """
-    if isinstance(player, RandomPlayer):
-        return RandomPlayer(player.player_num)
-    elif isinstance(player, ScoringPlayer):
-        return ScoringPlayer(player.player_num)
-    elif isinstance(player, GreedyPlayer):
-        return GreedyPlayer(player.player_num, player.depth, None)
-
-
 if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
 
-    # import python_ta
-    # python_ta.check_all(config={
-    #     'max-line-length': 120,
-    #     'max-nested-blocks': 4,
-    #     'extra-imports': ['typing', 'pygame', 'connect_four', 'player', 'interface', 'constant'],
-    #     'disable': ['no-member', 'too-many-instance-attributes'],
-    #     'allowed-io': ['run_game_interactive', 'run_game_between_ai', '_get_player_from_console']
-    # })
+    import python_ta
+    python_ta.check_all(config={
+        'max-line-length': 120,
+        'max-nested-blocks': 4,
+        'extra-imports': ['typing', 'pygame', 'connect_four', 'player', 'interface', 'constant'],
+        'disable': ['no-member', 'too-many-instance-attributes'],
+        'allowed-io': ['run_game_interactive', 'run_game_between_ai', '_get_player_from_console']
+    })
