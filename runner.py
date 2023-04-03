@@ -32,10 +32,37 @@ from constant import GAME_NOT_STARTED, GAMING, GAME_OVER, UNOCCUPIED, PLAYER_ONE
 
 class GameRunner:
     """
-    ...
+    A class that assembles the instructions of a game and leads the gaming process, letting two players
+    make moves alternatively.
+
     It has a lot of instance attributes, but we believe that they are all necessary for running such
     a large game. We tried to make the names readable and easy to understand. We also maded sure that
     the methods are neat and understandable.
+
+    Instance attributes:
+        - gane_status: an integer representing the state of the game, which is one of GAME_NOT_STARTED,
+        GAMING, and GAME_OVER.
+        - game: a ConnecFour instance representing the current game.
+        - ai_player: Either None or a GreedyPlayer that represents the AI our user is competing against.
+        - ai_search_depth: an integer representing the depth of the GameTree the AI player uses to make decisions.
+        - user_goes_first: a boolean value indicating if the user goes first.
+
+    Private instance attributes:
+        - _winner: an integer representing the winner of this game, or None if there is no winner.
+        - _me_first_button: a Button instance representing the interactive button which the user clicks to go first.
+        - _ai_first_button: a Button instance representing the interactive button which the user clicks to go second.
+        - _hint_button: a Button instance representing the interactive button which the user clicks to receive a hint.
+        - _restart_button: a Button instance representing the interactive button which the user clicks to retart a game.
+        - _game_board: a GameBoard instance representing the blue board on our interactive interface in which
+        the discs are dropped into.
+        - _hover_disc: a Disc instance representing the moving disc on top of the blue board on our interactive
+        interface which indicates the current hirozontal position of the disc if it is dropped at that moment.
+        - _legend: a list of Disc or Label representing the legend illustrated at the bottom of our
+        interactive interface, indicating the Disc color for each player.
+        - _notice_lable: a Label instance representing the instructions that appears on top of our
+        interactive interface.
+        - _win_label: a Label instance representing the winning message that is displayed once the game ends.
+
     """
     game_status: int
     game: ConnectFour
@@ -55,7 +82,7 @@ class GameRunner:
 
     def __init__(self, ai_search_depth: int) -> None:
         """
-        # TODO
+        Initializes the GameRunner.
         """
         self.game_status = GAME_NOT_STARTED
         self.game = ConnectFour()
@@ -92,7 +119,7 @@ class GameRunner:
 
     def draw(self, surface: pygame.Surface) -> None:
         """
-        # TODO
+        Draws surface, which is the current pygame surface display of the game.
         """
         surface.fill(WHITE)
         for button in [self._me_first_button, self._ai_first_button, self._hint_button, self._restart_button]:
@@ -107,7 +134,7 @@ class GameRunner:
 
     def handle_event(self, pygame_event: pygame.event, surface: pygame.Surface) -> None:
         """
-        # TODO
+        Handles the pygame_event on the surface given accordingly.
         """
         if pygame_event.type == pygame.MOUSEBUTTONUP:
             self._handle_mouse_button_up(pygame_event.pos, surface)
@@ -116,7 +143,7 @@ class GameRunner:
 
     def _handle_mouse_button_up(self, position: tuple[int, int], surface: pygame.Surface) -> None:
         """
-        ...
+        Handles the type of event which user clicks a position on the surface to advance the game.
         """
         # Press button to chooe who goes first
         if self._me_first_button.is_valid_click(position):
@@ -156,7 +183,8 @@ class GameRunner:
 
     def _handle_mouse_motion(self, position: tuple[int, int]) -> None:
         """
-        # TODO
+        Handles the type of event which user moves the mouse to position on the surface
+        to advance the game or change the display.
         """
         if self.game_status != GAMING:
             return
@@ -171,7 +199,8 @@ class GameRunner:
 
     def _start_gaming(self, first_player: str) -> None:
         """
-        ...
+        Uses first_player to update user_goes_first to the appropriate boolean value.
+        Updates game_status to GAMING.
         """
         if first_player == 'User':
             self.ai_player = GreedyPlayer(PLAYER_TWO, self.ai_search_depth, None)
@@ -186,7 +215,8 @@ class GameRunner:
 
     def _hint(self) -> None:
         """
-        ...
+        Update the game grid with a hint location where the user can choose to drop the piece, so the display can be
+        updated consequently.
         """
         hint_column = self.ai_player.hint_opponent(self.game)
         hint_position = self.game.get_move_position_by_column(hint_column)
@@ -194,7 +224,7 @@ class GameRunner:
 
     def _restart(self) -> None:
         """
-        ...
+        Reset the game to the condition same as when it started.
         """
         self.game = ConnectFour()
         self.ai_player = None
@@ -209,14 +239,15 @@ class GameRunner:
 
     def _ai_makes_move(self) -> None:
         """
-        ...
+        Make AI a move and record the move on the game grid.
         """
         ai_move_column = self.ai_player.choose_column(self.game)
         self._record_move(ai_move_column, 'AI')
 
     def _user_makes_move(self, mouse_position: tuple[int, int]) -> bool:
         """
-        ...
+        Make and record user's move according to mouse_position and return True if it is a valid position.
+        Display 'Choose another column!' and return False if it is not valid.
         """
         self._game_board.remove_hint()
         user_move_column = self._game_board.get_move_column(mouse_position)
@@ -232,7 +263,7 @@ class GameRunner:
 
     def _record_move(self, move_column: int, player_type: str) -> None:
         """
-        ...
+        Record a move for the given player_type at the appropriate position given move_column.
         """
         if (player_type == 'User' and self.user_goes_first) or (player_type == 'AI' and not self.user_goes_first):
             disc_type = PLAYER_ONE
@@ -244,7 +275,7 @@ class GameRunner:
 
     def _game_over(self) -> bool:
         """
-        ...
+        Return a boolean value representing whether the game is over.
         """
         self._winner = self.game.get_winner()
         if self._winner is None:
@@ -253,7 +284,7 @@ class GameRunner:
 
     def _show_winner(self) -> None:
         """
-        ...
+        Display a lable showing the result of the game.
         """
         self.game_status = GAME_OVER
         if self._winner == UNOCCUPIED:
@@ -269,7 +300,7 @@ class GameRunner:
 
     def _update_disabled(self) -> None:
         """
-        update the four buttons disabled attribute and gameboard's disabled attribute according to self.game_status
+        update the four buttons‘ disabled attribute and gameboard's disabled attribute according to self.game_status.
         """
         if self.game_status == GAME_NOT_STARTED:
             self._me_first_button.disabled = False
@@ -293,7 +324,7 @@ class GameRunner:
 
 def run_game_interactive() -> None:
     """
-    ...
+    Run a game in the console between the user and AI, allowing the user to choose if they want to go first.
     """
     connect_four = ConnectFour()
 
@@ -333,7 +364,8 @@ def run_game_interactive() -> None:
 
 def run_game_between_ai() -> None:
     """
-    ...
+    Run a game between two AIs in console, allowing the user to input the number of games they want the AI to play.
+    The results of each game and the accumulative result will be printed.
     """
     game_number = int(input('How many games do you want to run?'))
     while game_number <= 0:
@@ -378,7 +410,9 @@ def run_game_between_ai() -> None:
 
 def _get_player_from_console(player_number: int) -> Player:
     """
-    ...
+    Returns the type of AI Player that user chooses in console. A user input of 1 indicates Random Player, 2 indicates
+    Scoring Player, 3 indicates Greedy Player. Whether this AI player goes first will be dependent on player_number.
+    Player_number == PLAYER_ONE indicates AI goes first, Player_number == PLAYER_TWO indicates AI goes second.
     """
     print('Please choose an AI Player. Enter a number from 1 to 3.')
     player_type = int(input('1 = Random Player, 2 = Scoring Player, 3 = Greedy Player'))
@@ -399,7 +433,7 @@ def _get_player_from_console(player_number: int) -> Player:
 
 def _copy_player(player: Player) -> Player:
     """
-    ...
+    Return a copy of player.
     """
     if isinstance(player, RandomPlayer):
         return RandomPlayer(player.player_num)
