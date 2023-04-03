@@ -44,6 +44,7 @@ if __name__ == '__main__':
     pygame.display.set_caption("CONNECT FOUR")
     clock = pygame.time.Clock()
 
+    # Plays background music
     game_runner = GameRunner(5)
     pygame.mixer.music.load('waterfall.mp3')
     pygame.mixer.music.play(-1)
@@ -59,12 +60,12 @@ if __name__ == '__main__':
         pygame.display.update()
         clock.tick(50)
 
-    # The following line of code allows you to play against any AI of your choice in the console.
+    # The following code allows you to play against any AI of your choice in the console.
     # =================================================================================================================
     # while True:
     #   run_game_interactive()
 
-    # The following line of code runs games between two of our AIs by your choice.
+    # The following code runs games between two of our AIs by your choice.
     # You will be guided by instructions in the console to choose the two AIs.
     # =================================================================================================================
     # while True:
