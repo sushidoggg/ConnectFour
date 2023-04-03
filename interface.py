@@ -19,8 +19,12 @@ import pygame
 from pygame import gfxdraw
 from constant import UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT, \
     GRID_WIDTH, GRID_HEIGHT, SQUARESIZE, RADIUS, BORDER_RADIUS, \
-    BUTTON_WIDTH, BUTTON_HEIGHT, FONT_BUTTON, \
+    BUTTON_WIDTH, BUTTON_HEIGHT, FONT_BUTTON,\
     RED, DARK_RED, YELLOW, DARK_YELLOW, BLUE, DARK_BLUE, WHITE, GREY, DARK_GREY
+
+# We did not import WINDOW_WIDTH, WINDOW_HEIGHT from constant because python-ta detected it as unused-import
+# But we used WINDOW_WIDTH, WINDOW_HEIGHT in docstrings as a part of Preconditions.
+# So, if you want to @check_contract, you may need to import these two constants.
 
 
 class Button:
@@ -32,6 +36,12 @@ class Button:
         - _button_color: the rgb color of the inner side of the button
         - _darker_button_color: the rgb color of the outer side of the button
         - _disabled_color: rgb color the button when self.disabled is True
+
+    Representation Invariables:
+        - 0 <= self.center[0] <= WINDOW_WIDTH
+        - 0 <= self.center[1] <= WINDOW_HEIGHT
+        - all(0 <= color[i] <= 255 for color in [self._button_color, self._darker_button_color, self._disabled_color]
+        for i in range(3))
     """
     word: str
     center: tuple[int, int]
@@ -82,8 +92,7 @@ class Button:
 
     def is_valid_click(self, position: tuple[int, int]) -> bool:
         """Return if the given position is on the position of the button
-        Doesn't mutate self.disabled
-        Precondition:
+        Preconditions:
             - 0 <= position[0] <= WINDOW_WIDTH
             - 0 <= position[1] <= WINDOW_HEIGHT
         """
@@ -104,8 +113,14 @@ class GameBoard:
         - x: x position on pygame screen
         - y: y position on pygame
         - disabled: whether GameBoard is activated
-        - _grid: 2D list of Disc
-        - _hint_position:
+
+    Private Instance Attributes:
+        - _grid: a 2D list of Disc
+        - _hint_position: the position of hint disc. If no hint is given now, it is None
+
+    Representative Invariants:
+        - 0 <= self.x <= WINDOW_WIDTH
+        - 0 <= self.y <= WINDOW_HEIGHT
     """
     x: int
     y: int
@@ -130,15 +145,18 @@ class GameBoard:
 
     def _get_central_position(self, grid_x: int, grid_y: int) -> tuple[int, int]:
         """
-        # TODO
+        Return the center of the disc of self._grid[grid_x][grid_y]
+
+        Preconditions:
+            - 0 <= grid_x <= WINDOW_WIDTH
+            - 0 <= grid_y <= WINDOW_HEIGHT
         """
         position_x = int(self.x + (grid_x + 0.5) * SQUARESIZE)
         position_y = int(self.y + (grid_y + 0.5) * SQUARESIZE)
         return (position_x, position_y)
 
     def draw(self, surface: pygame.Surface) -> None:
-        """
-        ...
+        """ Draw game board on the given surface
         """
         board_rect = pygame.Rect(self.x, self.y, GRID_WIDTH * SQUARESIZE, GRID_HEIGHT * SQUARESIZE)
         draw_rounded_rect(surface, board_rect, BLUE, BORDER_RADIUS)
@@ -148,8 +166,10 @@ class GameBoard:
                 self._grid[y][x].draw(surface)
 
     def is_valid_click(self, position: tuple[int, int]) -> bool:
-        """
-        ...
+        """ Return if the position is on the gameboard. If self.disabled is True, it is not a valid click
+        Preconditions:
+            - 0 <= position[0] <= WINDOW_WIDTH
+            - 0 <= position[1] <= WINDOW_HEIGHT
         """
         if self.disabled:
             return False
@@ -160,23 +180,31 @@ class GameBoard:
 
     def get_move_column(self, position: tuple[int, int]) -> int:
         """
-        ...
+        Return which column the position points to. Return value is [0, GRID_WIDTH - 1], inclusive
+        Preconditions:
+            - 0 <= position[0] <= WINDOW_WIDTH
         """
         return (position[0] - self.x) // SQUARESIZE
 
     def record_move(self, move_position: tuple[int, int], disc_type: int) -> None:
-        """
-        ...
+        """ Update the color of the disc at move_position. If disc_type is HINT, also update self._hint_position
+
+        move_position indicates the position of disc in the order of bottom to top,
+        i.e (0,0) in move_position means the bottom left corner
+        whereas self._disc indicates position of disc from top to bottom,
+        i.e. (0,0) in self.disc means the top left corner.
+
+        Preconditions:
+            - disc_type in [UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT]
         """
         x, y = move_position
-        y = GRID_HEIGHT - 1 - y     # TODO
+        y = GRID_HEIGHT - 1 - y
         self._grid[y][x].update_color_and_type(disc_type)
         if disc_type == HINT:
             self._hint_position = (x, y)
 
     def remove_hint(self) -> None:
-        """
-        ...
+        """ Remove the hint disc by updating the hint disc to UNOCCUPIED, and set self._hint_position to None
         """
         if self._hint_position is not None:
             x, y = self._hint_position
@@ -186,8 +214,16 @@ class GameBoard:
 
 
 class Disc:
-    """
-    ...
+    """ A class represent a disc on game board.
+    Instance Attributes:
+        - x: x position of the disc on screen
+        - y: y position of the disc on screen
+        - disc_type: the current type of the disc
+        - filled_color: the rgb color of the inner of disc
+        - outline_color: the rgb color of the outline of disc
+    Representative Invariants:
+        - disc_type in [UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT]
+        - all(0 <= color[i] <= 255 for color in [filled_color, outline_color] for i in range (3))
     """
     x: int
     y: int
@@ -197,21 +233,23 @@ class Disc:
 
     def __init__(self, x: int, y: int, disc_type: int) -> None:
         """
-        ...
+        Initialize a disc
         """
         self.x, self.y = x, y
         self.update_color_and_type(disc_type)
 
     def draw(self, surface: pygame.Surface) -> None:
         """
-        ...
+        Draw the disc on the given surface
         """
         draw_circle(surface, self.x, self.y, RADIUS, self.outline_color)
         draw_circle(surface, self.x, self.y, int(RADIUS * 4 / 5), self.filled_color)
 
     def update_color_and_type(self, disc_type: int) -> None:
         """
-        ...
+        Update the color of the disc based on the disc_type
+        Preconditions:
+            - disc_type in [UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT]
         """
         self.disc_type = disc_type
         if self.disc_type == UNOCCUPIED:
@@ -225,8 +263,20 @@ class Disc:
 
 
 class Label:
-    """
-    ...
+    """ A class represents words showed on the pygame screen
+    Instance Attributes:
+        - position: the x-y position of the center of the label
+        - text: a pygame surface that indicate the words and color
+        - font: a pygame font that indicates the font of words and font size
+        - color: rgb color of the text
+        - background: the rectangular background of the label. If no background, it is None
+        - visible: whether to draw visible or not
+        - align: the way to align the text
+
+    Representative Invariants:
+        - self.align in ['center', 'left']
+        - 0 <= self.position[0] <= WINDOW_WIDTH
+        - 0 <= self.position[1] <= WINDOW_HEIGHT
     """
     position: tuple[int, int]
     text: pygame.Surface
@@ -239,7 +289,9 @@ class Label:
     def __init__(self, position: tuple[int, int], text: str, text_style: tuple[pygame.font.Font, tuple[int, int, int]],
                  background: Optional[tuple[pygame.Rect, tuple[int, int, int]]] = None) -> None:
         """
-        ...
+        Initialize a label
+        Preconditions:
+            - all(0 <= text_style[1][i] <= 255 for i in range(3))
         """
         self.position = position
         self.font, self.color = text_style
@@ -249,8 +301,7 @@ class Label:
         self.align = 'center'
 
     def draw(self, surface: pygame.Surface) -> None:
-        """
-        ...
+        """ Draw a label on the given surface. If self.visible is False, do not draw it
         """
         if not self.visible:
             return
@@ -266,7 +317,7 @@ class Label:
 
     def update_text(self, text: str) -> None:
         """
-        ...
+        Update the text of label
         """
         self.text = self.font.render(text, True, self.color)
 
