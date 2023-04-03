@@ -33,16 +33,16 @@ class GameTree:
     Each node in the tree stores a possible ConnectFour column.
 
     Instance Attributes:
-    - column: An int representing the current move (of either player_one or player_two),
-    or '*' if this tree represents the start of a game.
-    - player: Either PLAYER_ONE or PLAYER_TWO indicating which player is doing this move.
-    - score: A float between 0.0 to 1.0 (inclusive), representing how this move is favorable to self.player.
+        - column: An int representing the current move (of either player_one or player_two),
+        or '*' if this tree represents the start of a game.
+        - player: Either PLAYER_ONE or PLAYER_TWO indicating which player is doing this move.
+        - score: A float between 0.0 to 1.0 (inclusive), representing how this move is favorable to self.player.
 
 
     Representation Invariants:
-    - column == GAME_START_MOVE or 0 <= self.column < 7
-    - self.column == GAME_START_MOVE or self.player in {PLAYER_ONE, PLAYER_TWO}
-    - 0.0 <= self.score <= 1.0
+        - column == GAME_START_MOVE or 0 <= self.column < 7
+        - self.column == GAME_START_MOVE or self.player in {PLAYER_ONE, PLAYER_TWO}
+        - 0.0 <= self.score <= 1.0
     # TODO: Introduce minimum score & average score
     # TODO: Player
     Current player will choose one of the possible moves in its subtress.
@@ -58,8 +58,8 @@ class GameTree:
         """ Initialize a new game tree.
 
         Precondition:
-        - column == GAME_START_MOVE or 0 <= column < 7
-        - player in {PLAYER_ONE, PLAYER_TWO}
+            - column == GAME_START_MOVE or 0 <= column < 7
+            - player in {PLAYER_ONE, PLAYER_TWO}
         """
         self.move_column = move_column
         self.initial_player = initial_player

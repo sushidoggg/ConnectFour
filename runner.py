@@ -300,7 +300,7 @@ class GameRunner:
 
     def _update_disabled(self) -> None:
         """
-        Update each button's disabled attribute when self.game_status changes.
+        update the four buttons‘ disabled attribute and gameboard's disabled attribute according to self.game_status.
         """
         if self.game_status == GAME_NOT_STARTED:
             self._me_first_button.disabled = False
@@ -447,11 +447,11 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod(verbose=True)
 
-    import python_ta
-    python_ta.check_all(config={
-        'max-line-length': 120,
-        'max-nested-blocks': 4,
-        'extra-imports': ['typing', 'pygame', 'connect_four', 'player', 'interface', 'constant'],
-        'disable': ['no-member', 'too-many-instance-attributes'],
-        'allowed-io': ['run_game_interactive', 'run_game_between_ai', '_get_player_from_console']
-    })
+    # import python_ta
+    # python_ta.check_all(config={
+    #     'max-line-length': 120,
+    #     'max-nested-blocks': 4,
+    #     'extra-imports': ['typing', 'pygame', 'connect_four', 'player', 'interface', 'constant'],
+    #     'disable': ['no-member', 'too-many-instance-attributes'],
+    #     'allowed-io': ['run_game_interactive', 'run_game_between_ai', '_get_player_from_console']
+    # })

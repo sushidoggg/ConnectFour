@@ -38,24 +38,26 @@ if __name__ == '__main__':
 
     # The following section of code allows you to play against our Greedy AI Player in a Pygame window.
     # =================================================================================================================
-    # pygame.init()
-    # screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    # pygame.display.flip()
-    # pygame.display.set_caption("CONNECT FOUR")
-    # clock = pygame.time.Clock()
-    #
-    # game_runner = GameRunner(5)
-    #
-    # while True:
-    #
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             sys.exit()
-    #         game_runner.handle_event(event, screen)
-    #
-    #     game_runner.draw(screen)
-    #     pygame.display.update()
-    #     clock.tick(50)
+    pygame.init()
+    screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+    pygame.display.flip()
+    pygame.display.set_caption("CONNECT FOUR")
+    clock = pygame.time.Clock()
+
+    game_runner = GameRunner(5)
+    pygame.mixer.music.load('waterfall.mp3')
+    pygame.mixer.music.play(-1)
+
+    while True:
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            game_runner.handle_event(event, screen)
+
+        game_runner.draw(screen)
+        pygame.display.update()
+        clock.tick(50)
 
     # The following line of code allows you to play against any AI of your choice in the console.
     # =================================================================================================================
@@ -65,5 +67,5 @@ if __name__ == '__main__':
     # The following line of code runs games between two of our AIs by your choice.
     # You will be guided by instructions in the console to choose the two AIs.
     # =================================================================================================================
-    while True:
-        run_game_between_ai()
+    # while True:
+    #     run_game_between_ai()

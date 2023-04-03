@@ -32,9 +32,12 @@ from constant import UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, HINT, \
 class Button:
     """A class represents a circle buttons.
     Instance Attributes:
-        - disabled: show that if the button should be disactivated, this attribute needs to be changed manually
+        - disabled: show that if the button should be disactivated
         - word: the word that is printed on the button
         - center: a tuple of integers that is the center location of the button
+        - _button_color: the rgb color of the inner side of the button
+        - _darker_button_color: the rgb color of the outer side of the button
+        - _disabled_color: rgb color the button when self.disabled is True
     """
     word: str
     center: tuple[int, int]
@@ -46,8 +49,6 @@ class Button:
     def __init__(self, x: int, y: int, word: str) -> None:
         """Create a rectangular button of given image at (x, y)
         x, y are the topleft location of the button on a surface.
-        image is the location of the image on the button. The image's size should match BUTTON_WIDETH and BUTTON_HEIGHT
-        in the same ratio
         """
         self.center = (x, y)
         self.word = word
@@ -104,8 +105,13 @@ class Button:
 
 
 class GameBoard:
-    """
-    ...
+    """ A class represents the 6 * 7 grid on which discs are put
+    Instance Attributes:
+        - x: x position on pygame screen
+        - y: y position on pygame
+        - disabled: whether GameBoard is activated
+        - _grid: 2D list of Disc
+        - _hint_position:
     """
     x: int
     y: int
@@ -115,7 +121,7 @@ class GameBoard:
 
     def __init__(self, x: int, y: int, disabled: bool = True) -> None:
         """
-        ...
+        Initialize a GameBoard at position (x, y)
         """
         self.x, self.y = x, y
         self._grid = []
