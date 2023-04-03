@@ -29,7 +29,7 @@ from typing import Optional
 import random
 from connect_four import ConnectFour, get_opposite_player
 from game_tree import GameTree, GAME_START_MOVE
-from constant import UNOCCUPIED, PLAYER_ONE, PLAYER_TWO, GRID_WIDTH, GRID_HEIGHT
+from constant import GRID_WIDTH, GRID_HEIGHT
 
 
 class Player:
@@ -170,7 +170,7 @@ class GreedyPlayer(Player):
 
         Generate a new game tree if game_tree is None.
 
-        Precondition:
+        Preconditions:
             - player_num in {PLAYER_ONE, PLAYER_TWO}
             - search_depth > 0
         """
